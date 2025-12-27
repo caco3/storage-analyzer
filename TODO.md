@@ -1,4 +1,5 @@
 # TODO
+- [ ] Catch if `EXCLUDE` is not set
 - [ ] Handle if there is no DB at all
 - [ ] add a button to start a manual scan
 - [ ] allow deleting a snapshot

@@ -101,13 +101,6 @@ ul {
   font-weight: bold;
 }
 
-.nav-ul {
-  overflow-x: hidden;
-  white-space: nowrap;
-  height: 100%;
- width: 100%;
-}
-
 .nav-li {
   display: inline;
   height: 200px;

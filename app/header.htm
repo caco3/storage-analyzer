@@ -1,5 +1,8 @@
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script type="text/javascript">
+    var snapshots = [];
+    var path = "";
+
     $(document).ready(function() {
         console.log("ready");
         
@@ -18,10 +21,10 @@
                 console.log("No 'db' parameter in URL, selecting latest DB");
                 db = data.databases[data.databases.length - 1]
               }
-              db = db.split("?")[0]
+              db = db.split("?")[0].replace("/database/duc_", "").replace(".db", "")
               console.log("Selected DB: " + db)
               
-              var path = (new URL(location.href)).searchParams.get('path')
+              path = (new URL(location.href)).searchParams.get('path')
               path = path.split("?")[0]
               console.log("Path: " + path)
               
@@ -29,40 +32,36 @@
                 path = "/scan"
               }
 
-              list = document.getElementById("databases_list")     
-              
               /* Iterate through the list */
               for(let i = 0; i < data.databases.length; i++) {
-                console.log(i, data.databases[i]);
+                let selected = false;
+                db_tmp = data.databases[i].replace("/database/duc_", "").replace(".db", "")
+                if (db_tmp == db) { // Selected snapshot
+                  selected = true;
+                  selected_db_index = i;
+                }
+
+                db_tmp = db_tmp.replace("_", " ").split(" ")
+                db_name = db_tmp[0] + "_" + db_tmp[1].replaceAll(":", "-")
+                title = db_tmp[0] + " " + db_tmp[1].replaceAll("-", ":")
+                snapshots.push({"db": db_name, "title": title, "selected": selected});
+              }
+
+              console.log("Snapshots:", snapshots)
+
+              /* Format the list */
+              list = document.getElementById("databases_list")
+              for(let i = 0; i < snapshots.length; i++) {
                 let li = document.createElement('li');
-                let arr = data.databases[i].replace("/database/duc_", "").replace(".db", "").replace("_", " ").split(" ")
-                let formated = arr[0] + " " + arr[1].replaceAll("-", ":")
                 
                 let entry_class = "not_selected_snapshot"
                 let a_class = ""
-                if (data.databases[i] == db) {
+                if (snapshots[i].db == db) { // Selected snapshot
                     entry_class = "selected_snapshot"
                     a_class = "selected_snapshot_link"
-
-                    var formated_path = ""
-                    //path = path.replace("/scan", "")
-                    p = "/"
-                    arr = path.split("/")
-                    arr.shift()
-                    arr.forEach(element => {
-                      if (element != "") {
-                        console.log("element: " + element);
-                        p = p + element + "/"
-                        //formated_path = formated_path + "/<a href=duc.cgi?db=" + db + "&path=/scan" + p + ">" + element + "</a>"
-                        formated_path = formated_path + "/<a href=duc.cgi?db=" + db + "&path=" + p + ">" + element + "</a>"
-                      }
-                    });
-
-                    document.getElementById("content_header_div").innerHTML = "<h2 class=content_header>Snapshot " + 
-                      formated + "</h2><h3 class=content_header>Path: " + formated_path + "</h3>"                    
-                }
+                }                  
                 
-                li.innerHTML = "<span class=" + entry_class + "><a class=\"snapshot_link " + a_class + "\" href=duc.cgi?db=" + data.databases[i] + "&cmd=index&path=" + path + ">" + formated + "</a></span>"
+                li.innerHTML = "<span class=" + entry_class + "><a class=\"snapshot_link " + a_class + "\" href=" + url(i) + ">" + snapshots[i].title + "</a></span>"
                 li.className = "snapshot"                        
                 list.appendChild(li);
               }
@@ -74,7 +73,34 @@
               document.getElementById("databases").innerHTML = "Failed to read the list of snapshots!<br>Error: " + xhr.status + ", " + thrownError + "!"
             },
         });
+
+      document.addEventListener('keypress', function(event) {
+        var key = event.key.toLowerCase();
+        console.log("Key pressed: " + key);
+
+        if (key == "p") {
+          /* Get snapshot before the selected one */
+          if (selected_db_index > 0) {
+            index = selected_db_index - 1;
+            window.location.href = url(index)
+          }
+
+        } else if (key == "n") {
+          /* Get snapshot after the selected one */
+          if (selected_db_index < snapshots.length - 1) {
+            index = selected_db_index + 1;
+            window.location.href = url(index)
+          }
+        }
+      })
+
     })
+
+
+    function url(index) {
+      return "duc.cgi?db=/database/duc_" + snapshots[index].db + ".db&cmd=index&path=" + path
+    }
+
   </script>
 
 
@@ -83,19 +109,19 @@
           <div style="padding: 0;"><a href="/"><img src=logo.png width=70px style="float: left; padding-left: 0"></a></div>
           <div style="float: none; margin-left: 70px;"><a href="/" style="text-decoration: none"><h1>Storage Analyzer</h1></a></div>
       </div>
-      <h2 style="margin-bottom: 0; margin-left: 10px;">Snapshots</h2>
-      <div id=databases><ul id="databases_list" style="margin:0"></ul></div>
 
-      <hr>
-  
-      <h3>Navigation</h3>
-      <ul class="nav-ul">
+      <ul id="navigation_list">
         <li class="nav-li"><span class="not_selected_snapshot"><a class="snapshot_link " href="duc.cgi">Main</a></span></li>
         <li class="nav-li"><span class="not_selected_snapshot"><a class="snapshot_link " href="manual_scan.cgi">Start Scan</a></span></li>
         <li class="nav-li"><span class="not_selected_snapshot"><a class="snapshot_link " href="show-log.cgi">Log</a></span></li>
         <li class="nav-li"><span class="not_selected_snapshot"><a class="snapshot_link " href="show-help.cgi">Help</a></span></li>
       </ul>
-  
+
+      <h3 style="margin-top: 5px; margin-bottom: 0; margin-left: 10px;">Keyboard shortcuts</h3>
+      <p style="margin-top: 5px; margin-bottom: 0; margin-left: 10px;"><strong>n</strong>: next snapshot<br><strong>p</strong>: previous snapshot</p>
+
+      <h2 style="margin-top: 10px; margin-bottom: 0; margin-left: 10px;">Snapshots</h2>
+      <div id=databases><ul id="databases_list" style="margin:0"></ul></div>  
     </div>
   <div id=content_header_div style="width: 80%"><h2 id=content_header>Snapshot</h2></div>
   <div id=content style="float: left;">
