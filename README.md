@@ -30,7 +30,7 @@ docker compose up --build --detach
 ### Without Docker Compose
 ```
 docker run -e "SCHEDULE=0 0 * * *" -e "RUN_SCAN_ON_STARTUP=false" \
-    -e "EXCLUDE=proc sys dev run tmp temp usr proc" -p 80:80 \
+    -e "EXCLUDE=proc sys dev run tmp usr proc" -p 80:80 \
     --mount type=bind,src=/,dst=/scan/root,readonly \
     --mount type=volume,src=duc_database,dst=/database \
     caco3x/storage-analyzer
@@ -55,7 +55,7 @@ docker run -e "SCHEDULE=0 0 * * *" -e "RUN_SCAN_ON_STARTUP=false" \
 
 ## Developing
 ```bash
-docker run -it -e "RUN_SCAN_ON_STARTUP=true" -p 8080:80 --mount type=bind,src=$PWD/..,dst=/scan/temp,readonly  --mount type=volume,src=duc_database,dst=/database -v $PWD/app:/var/www/html $(docker build -q .)
+docker run -it -e "RUN_SCAN_ON_STARTUP=true" -e "EXCLUDE=proc sys dev run tmp temp usr proc" -p 8080:80 --mount type=bind,src=$PWD/..,dst=/scan/temp,readonly  --mount type=volume,src=duc_database,dst=/database -v $PWD/app:/var/www/html $(docker build -q .)
 ```
 
 Now you can edit the files in the `app` folder without having to rebuild/start the docker container.
@@ -63,7 +63,7 @@ Now you can edit the files in the `app` folder without having to rebuild/start t
 ### Upload to dockerhub
 Build, tag and publish:
 ```
-sudo docker buildx build . --file Dockerfile --tag caco3x/storage-analyzer:latest --load
+docker buildx build . --file Dockerfile --tag caco3x/storage-analyzer:latest --load
 
 sudo docker login -u caco3x
 sudo docker push caco3x/storage-analyzer:latest

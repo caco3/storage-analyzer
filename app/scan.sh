@@ -21,6 +21,13 @@ if mkdir "$LOCK_DIR" 2>/dev/null; then
         # --exclude=Selektion --exclude=Speziell --exclude=roms
         status=$?
         echo "End of scan: $(date) (exit code: $status)"
+        # Compress database
+        echo "Compressing database: $DATABASE..."
+        ls -lh $DATABASE
+        zstd -19 -f "$DATABASE" -o "$DATABASE.zst"
+        echo "Compressed database: $DATABASE.zst"
+        ls -lh $DATABASE.zst
+        rm "$DATABASE"
         # Propagate exit status of duc from this subshell to pipeline.
         exit $status
     } 2>&1 | tee -a "$LOG_FILE"

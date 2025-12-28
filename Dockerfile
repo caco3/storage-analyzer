@@ -63,6 +63,7 @@ RUN dpkg -i /duc.deb \
         libpangocairo-1.0-0 \
         libtokyocabinet9 \
         nginx \
+        zstd \
  && rm -rf /var/lib/apt/lists/* \
  && rm -rf /var/www/html/* \
  && mkdir -p /database /scan

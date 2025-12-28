@@ -8,7 +8,7 @@ echo "Content-type: application/json"
 echo ""
 
 echo "{"\"databases\"": ["
-for f in `ls -c1 $DB_FOLDER/duc_*.db | sort`; do
-    echo "\"$f\", "
+for f in `ls -c1 $DB_FOLDER/duc_*.db.zst | sort`; do
+    echo "\"${f%.zst}\", "
 done
 echo "0 ]}"
