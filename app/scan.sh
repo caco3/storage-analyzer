@@ -23,10 +23,9 @@ if mkdir "$LOCK_DIR" 2>/dev/null; then
         echo "End of scan: $(date) (exit code: $status)"
         # Compress database
         echo "Compressing database: $DATABASE..."
-        ls -lh $DATABASE
         zstd -19 -f "$DATABASE" -o "$DATABASE.zst"
         echo "Compressed database: $DATABASE.zst"
-        ls -lh $DATABASE.zst
+        echo "Database size: "$(du -h "$DATABASE" | cut -f1)" (compressed: "$(du -h "$DATABASE.zst" | cut -f1) ")"
         rm "$DATABASE"
         # Propagate exit status of duc from this subshell to pipeline.
         exit $status
