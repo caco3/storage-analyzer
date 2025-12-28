@@ -6,7 +6,7 @@ ARG UBUNTU_VERSION=24.04
 
 FROM ubuntu:${UBUNTU_VERSION} AS build
 
-ARG DUC_VERSION=1.4.5
+ARG DUC_VERSION=1.4.6
 
 RUN apt-get update -qq \
  && apt-get install -y -qq --no-install-recommends \
@@ -28,8 +28,7 @@ COPY *.patch ./
 
 RUN tar xzf duc-${DUC_VERSION}.tar.gz \
  && cd duc-${DUC_VERSION} \
- && git apply ../add-db-to-url.patch \
- && git apply ../show-html-on-error.patch \
+ && git apply ../*.patch \
  && ./configure \
  && make -j"$(nproc)" \
  && checkinstall --install=no --default \
