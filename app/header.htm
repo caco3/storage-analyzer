@@ -2,77 +2,93 @@
   <script type="text/javascript">
     var snapshots = [];
     var path = "";
+    var selected_db_index;
 
     $(document).ready(function() {
-        console.log("ready");
-        
-        /* Fetch list of databases and fill them into the list */
-        $.ajax("get-databases.cgi", {
-            success: function (data) {
-              // Success callback function
-              console.log(data)
-              
-              /* Delete the last one entry since it is always "0" */
-              data.databases.pop()
-        
-              /* Extract the parameters from the URL */
-              var db = (new URL(location.href)).searchParams.get('db')
-              if (db == null) {
-                console.log("No 'db' parameter in URL, selecting latest DB");
-                db = data.databases[data.databases.length - 1]
-              }
-              db = db.split("?")[0].replace("/database/duc_", "").replace(".db", "")
-              console.log("Selected DB: " + db)
-              
-              path = (new URL(location.href)).searchParams.get('path')
-              path = path.split("?")[0]
-              console.log("Path: " + path)
-              
-              if (path == null) {
-                path = "/scan"
-              }
+      console.log("ready");
+      
+      /* Fetch list of databases and fill them into the list */
+      $.ajax("get-databases.cgi", {
+        success: function (data) {
+          // Success callback function
+          console.log(data)
+          
+          /* Delete the last one entry since it is always "0" */
+          data.databases.pop()
+    
+          /* Extract the parameters from the URL */
+          var db = (new URL(location.href)).searchParams.get('db')
+          if (db == null) {
+            console.log("No 'db' parameter in URL, selecting latest DB");
+            db = data.databases[data.databases.length - 1]
+          }
+          db = db.split("?")[0].replace("/database/duc_", "").replace(".db", "")
+          console.log("Selected DB: " + db)
+          
+          path = (new URL(location.href)).searchParams.get('path')
+          path = path.split("?")[0]
+          console.log("Path: " + path)
+          
+          if (path == null) {
+            path = "/scan"
+          }
 
-              /* Iterate through the list */
-              for(let i = 0; i < data.databases.length; i++) {
-                let selected = false;
-                db_tmp = data.databases[i].replace("/database/duc_", "").replace(".db", "")
-                if (db_tmp == db) { // Selected snapshot
-                  selected = true;
-                  selected_db_index = i;
-                }
+          /* Iterate through the list */
+          for(let i = 0; i < data.databases.length; i++) {
+            let selected = false;
+            db_tmp = data.databases[i].replace("/database/duc_", "").replace(".db", "")
+            if (db_tmp == db) { // Selected snapshot
+              selected = true;
+              selected_db_index = i;
+            }
 
-                db_tmp = db_tmp.replace("_", " ").split(" ")
-                db_name = db_tmp[0] + "_" + db_tmp[1].replaceAll(":", "-")
-                title = db_tmp[0] + " " + db_tmp[1].replaceAll("-", ":")
-                snapshots.push({"db": db_name, "title": title, "selected": selected});
-              }
+            db_tmp = db_tmp.replace("_", " ").split(" ")
+            db_name = db_tmp[0] + "_" + db_tmp[1].replaceAll(":", "-")
+            title = db_tmp[0] + " " + db_tmp[1].replaceAll("-", ":")
+            snapshots.push({"db": db_name, "title": title, "selected": selected});
+          }
 
-              console.log("Snapshots:", snapshots)
+          console.log("Snapshots:", snapshots)
 
-              /* Format the list */
-              list = document.getElementById("databases_list")
-              for(let i = 0; i < snapshots.length; i++) {
-                let li = document.createElement('li');
-                
-                let entry_class = "not_selected_snapshot"
-                let a_class = ""
-                if (snapshots[i].db == db) { // Selected snapshot
-                    entry_class = "selected_snapshot"
-                    a_class = "selected_snapshot_link"
-                }                  
-                
-                li.innerHTML = "<span class=" + entry_class + "><a class=\"snapshot_link " + a_class + "\" href=" + url(i) + ">" + snapshots[i].title + "</a></span>"
-                li.className = "snapshot"                        
-                list.appendChild(li);
-              }
-              
-            },
-            error: function (xhr, ajaxOptions, thrownError) {
-              // Error callback
-              console.log("Error, failed to fetch get-databases.cgi: " + xhr.status + ", " + thrownError + "!");
-              document.getElementById("databases").innerHTML = "Failed to read the list of snapshots!<br>Error: " + xhr.status + ", " + thrownError + "!"
-            },
-        });
+          /* Format the list */
+          list = document.getElementById("databases_list")
+          for(let i = 0; i < snapshots.length; i++) {
+            let li = document.createElement('li');
+            
+            let entry_class = "not_selected_snapshot"
+            let a_class = ""
+            if (snapshots[i].db == db) { // Selected snapshot
+                entry_class = "selected_snapshot"
+                a_class = "selected_snapshot_link"
+            }                  
+            
+            li.innerHTML = "<span class=" + entry_class + "><a class=\"snapshot_link " + a_class + "\" href=" + url_from_snapshot_index(i) + ">" + snapshots[i].title + "</a></span>"
+            li.className = "snapshot"                        
+            list.appendChild(li);
+          }
+          
+          /* Convert path to URL */
+          p = document.getElementById("path");
+          p.innerHTML = url_from_snapshot_index(selected_db_index);
+
+          console.log("Path: " + path);
+          folders = path.split("/")
+          console.log("Folders: " + folders);
+          f = "";
+          txt = "";
+          for (let i = 0; i < folders.length; i++) {
+            f += folders[i] + "/";
+            console.log("Folder: " + f.slice(0, -1));
+            txt += "<a href='" + url_from_path(db, f.slice(0, -1)) + "'>" + folders[i] + "</a> / ";
+          }
+          p.innerHTML = txt;
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+          // Error callback
+          console.log("Error, failed to fetch get-databases.cgi: " + xhr.status + ", " + thrownError + "!");
+          document.getElementById("databases").innerHTML = "Failed to read the list of snapshots!<br>Error: " + xhr.status + ", " + thrownError + "!"
+        },
+      });
 
       document.addEventListener('keypress', function(event) {
         var key = event.key.toLowerCase();
@@ -82,25 +98,28 @@
           /* Get snapshot before the selected one */
           if (selected_db_index > 0) {
             index = selected_db_index - 1;
-            window.location.href = url(index)
+            window.location.href = url_from_snapshot_index(index)
           }
 
         } else if (key == "n") {
           /* Get snapshot after the selected one */
           if (selected_db_index < snapshots.length - 1) {
             index = selected_db_index + 1;
-            window.location.href = url(index)
+            window.location.href = url_from_snapshot_index(index)
           }
         }
       })
-
     })
 
 
-    function url(index) {
-      return "duc.cgi?db=/database/duc_" + snapshots[index].db + ".db&cmd=index&path=" + path
+    function url_from_snapshot_index(index) {
+      return "duc.cgi?cmd=index&db=/database/duc_" + snapshots[index].db + ".db&path=" + path;
     }
 
+
+    function url_from_path(db, path) {
+      return "duc.cgi?cmd=index&db=/database/duc_" + db + ".db&path=" + path;
+    }
   </script>
 
 
