@@ -1,0 +1,17 @@
+diff --git a/src/libduc-graph/graph.c b/src/libduc-graph/graph.c
+index da2e3b0..2940096 100644
+--- a/src/libduc-graph/graph.c
++++ b/src/libduc-graph/graph.c
+@@ -457,10 +457,10 @@ int duc_graph_draw(duc_graph *g, duc_dir *dir)
+ 		free(l);
+ 	}
+ 	
+-	char *p = duc_dir_get_path(dir);
++	/*char *p = duc_dir_get_path(dir);
+ 	if(g->backend)
+ 		g->backend->draw_text(g, (int)g->cx, 10, FONT_SIZE_LABEL * g->font_scale, p);
+-	free(p);
++	free(p);*/
+ 
+ 	struct duc_size size;
+ 	duc_dir_get_size(dir, &size);
