@@ -29,7 +29,6 @@
           db = (new URL(location.href)).searchParams.get('db')
           if (db == null) {
             console.log("No 'db' parameter in URL, selecting latest DB");
-            firework.launch('No snapshot specified, using latest snapshot', 'warning', 2000);
             db = data.databases[data.databases.length - 1]["db"]
           }
           console.log("Selected DB: " + db)
@@ -37,7 +36,6 @@
           path = (new URL(location.href)).searchParams.get('path')
           if (path == null) {
             console.log("No 'path' parameter in URL, selecting '/scan'");
-            firework.launch('No path specified, using top folder', 'warning', 2000);
             path = "/scan"
           }
           //path = path.split("?")[0]
@@ -169,7 +167,7 @@
 
       <ul id="navigation_list">
         <li class="nav-li"><span class="not_selected_snapshot"><a class="snapshot_link " href="duc.cgi">Main</a></span></li>
-        <li class="nav-li"><span class="not_selected_snapshot"><a class="snapshot_link " href="manual_scan.cgi">Start Scan</a></span></li>
+        <li class="nav-li"><span class="not_selected_snapshot"><a class="snapshot_link " href="manage-snapshots.cgi">Manage</a></span></li>
         <li class="nav-li"><span class="not_selected_snapshot"><a class="snapshot_link " href="show-log.cgi">Log</a></span></li>
         <li class="nav-li"><span class="not_selected_snapshot"><a class="snapshot_link " href="show-help.cgi">Help</a></span></li>
       </ul>

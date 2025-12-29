@@ -17,6 +17,7 @@ for f in `ls -c1 $DB_FOLDER/duc_*.db.zst | sort`; do
         size=0
     fi
     f=${f%.zst}
-    echo "{\"name\": \"$f\", \"size\": $size},"
+    file_size=$(stat -c%s "$f.zst" 2>/dev/null || echo 0)
+    echo "{\"name\": \"$f\", \"size\": $size, \"db-size\": $file_size},"
 done
 echo "null ]}"
