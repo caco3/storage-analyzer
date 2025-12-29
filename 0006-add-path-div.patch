@@ -1,0 +1,12 @@
+diff --git a/src/duc/cmd-cgi.c b/src/duc/cmd-cgi.c
+index 8d947c4..40ea80e 100644
+--- a/src/duc/cmd-cgi.c
++++ b/src/duc/cmd-cgi.c
+@@ -379,6 +379,7 @@ static void do_index(duc *duc, duc_graph *graph, duc_dir *dir)
+ 		i++;
+ 	}
+ 	printf(" </table>\n");
++	printf(" <div id=path>%s</div>\n", duc_dir_get_path(dir));
+ 
+ 	if(path) {
+ 		printf("<div id=graph>\n");
