@@ -85,6 +85,15 @@
     $.ajax('get-databases.cgi', {
       success: function(data) {
         data.databases.pop();
+
+        if (data.databases.length === 0) {
+          snapshots = [];
+          db = null;
+          path = '/scan';
+          $('#databases_list').html('<li class="snapshot"><span class="not_selected_snapshot">No snapshots yet</span></li>');
+          $('#path').html('');
+          return;
+        }
         
         db = url.searchParams.get('db');
         if (!db && data.databases.length > 0) {
@@ -119,6 +128,13 @@
 
     $(document).on('keypress', function(e) {
       var key = e.key.toLowerCase();
+
+      if (snapshots.length === 0) {
+        if (key === 'n' || key === 'p') {
+          firework.launch('No snapshots available', 'warning', 2000);
+        }
+        return;
+      }
       
       if (key === 'p' && selectedIndex > 0) {
         window.location.href = urlFromIndex(selectedIndex - 1);

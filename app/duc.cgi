@@ -60,6 +60,30 @@ if [[ "$DB" == "" ]]; then
 fi
 #echo "DB: $DB<br>"
 
+if [[ "${DB:-}" == "" ]]; then
+    echo "Content-type: text/html"; echo
+    cat <<EOF
+<!DOCTYPE html>
+<head>
+  <title>Storage Analyzer</title>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+EOF
+    cat header.htm | sed 's/Snapshot/No snapshots found/'
+    cat <<EOF
+      <div class="info-box">
+        <h2>No snapshots available</h2>
+        <p>No database snapshot exists yet. Start a scan to create your first snapshot.</p>
+        <p><a class="snapshot_link" href="manage-snapshots.cgi">Go to Manage</a></p>
+      </div>
+EOF
+    cat footer.htm
+    echo "</body></html>"
+    exit 0
+fi
+
 # If the path variable is not set, no pie chart is shown
 # In such case, redirect to the same URL but append "path=/scan"
 get_PATH_IN_SNAPSHOT "$REQUEST_URI"
@@ -68,10 +92,34 @@ if [[ "$PATH_IN_SNAPSHOT" == "" ]]; then
     #echo "path parameter is missing or empty!<br>"
     echo "Content-type: text/html"; echo
     echo "<meta http-equiv=refresh content=\"0; url=$REQUEST_URI?db=$DB&path=/scan\">"
+    exit 0
 fi
 
 # Decompress the database
-rm -f $DB_FOLDER/*.db
-zstd -d "$DB.zst" -o $DB
+rm -f "$DB" 2>/dev/null || true
+if [[ ! -f "$DB.zst" ]]; then
+    echo "Content-type: text/html"; echo
+    cat <<EOF
+<!DOCTYPE html>
+<head>
+  <title>Storage Analyzer</title>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+EOF
+    cat header.htm | sed 's/Snapshot/Snapshot error/'
+    cat <<EOF
+      <div class="error_message">
+        <h2 class="error">Snapshot file missing</h2>
+        <p>Expected compressed snapshot: <code>$DB.zst</code></p>
+      </div>
+EOF
+    cat footer.htm
+    echo "</body></html>"
+    exit 0
+fi
+
+zstd -d "$DB.zst" -o "$DB"
 
 exec duc cgi --database=$DB --dpi=120 --size=600 --list --levels 1 --header header.htm --footer footer.htm --css-url style.css --db-error db-error.cgi --path-error path-error.cgi

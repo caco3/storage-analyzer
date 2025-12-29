@@ -194,7 +194,9 @@ cat <<'EOF'
   function loadSnapshots() {
     $.ajax("get-databases.cgi", {
       success: function(data) {
-        data.databases.pop(); // Remove trailing null
+        if (Array.isArray(data.databases) && data.databases.length > 0 && data.databases[data.databases.length - 1] === null) {
+          data.databases.pop(); // Remove trailing null
+        }
         
         var tbody = $("#snapshots-body");
         tbody.empty();
