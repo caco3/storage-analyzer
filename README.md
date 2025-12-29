@@ -55,7 +55,8 @@ docker run -e "SCHEDULE=0 0 * * *" -e "RUN_SCAN_ON_STARTUP=false" \
 
 ## Developing
 ```bash
-docker run -it -e "RUN_SCAN_ON_STARTUP=true" -e "EXCLUDE=proc sys dev run tmp temp usr proc" -p 8080:80 --mount type=bind,src=$PWD/..,dst=/scan/temp,readonly --mount type=bind,src=$PWD/app,dst=/var/www/html $(docker build -q .)
+sudo docker run -it -e "RUN_SCAN_ON_STARTUP=true" -e "EXCLUDE=proc sys dev run tmp usr proc" -p 8080:80 --mount type=bind,src=$PWD/..,dst=/scan/temp,readonly -v $PWD/duc_database:/database -v $PWD/app:/var/www/html --name storage-analyzer $(docker build -q .)
+sudo docker stop storage-analyzer; sudo docker rm storage-analyzer
 ```
 
 Now you can edit the files in the `app` folder without having to rebuild/start the docker container.
