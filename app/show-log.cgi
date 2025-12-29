@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-
-
 echo "Content-type: text/html"; echo
 
 cat <<EOF

@@ -67,7 +67,7 @@
                 a_class = "selected_snapshot_link"
             }                  
             
-            li.innerHTML = "<span class=" + entry_class + "><a class=\"snapshot_link " + a_class + "\" href=" + url_from_snapshot_index(i) + ">" + snapshots[i].title + "</a></span>"
+            li.innerHTML = "<span class=" + entry_class + "><a class=\"snapshot_link " + a_class + "\" style=\"display: inline-block; width: 160px;\" href=" + url_from_snapshot_index(i) + ">" + snapshots[i].title + "</a></span>"
             li.className = "snapshot"                        
             list.appendChild(li);
           }

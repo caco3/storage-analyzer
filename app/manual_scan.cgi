@@ -6,7 +6,20 @@ LOG_FILE="${DUC_LOG_FILE:-/var/log/duc.log}"
 LOCK_DIR="/tmp/scan.lock"
 REQUEST_DIR="/tmp/scan_requested"
 
-echo "Content-type: text/plain"; echo
+echo "Content-type: text/html"; echo
+
+cat <<EOF
+<!DOCTYPE html>
+<head>
+  <title>Storage Analyzer</title>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+ <body>
+EOF
+
+cat header.htm | sed 's/Snapshot/Manual Scan/'
+
 if [ -d "$LOCK_DIR" ]; then
     echo "A scan is already in progress:"; echo
     cat "$LOG_FILE"
