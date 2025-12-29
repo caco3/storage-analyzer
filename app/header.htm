@@ -41,7 +41,7 @@
           /* Iterate through the list */
           for(let i = 0; i < data.databases.length; i++) {
             let selected = false;
-            db_tmp = data.databases[i].replace("/database/duc_", "").replace(".db", "")
+            db_tmp = data.databases[i]["name"].replace("/database/duc_", "").replace(".db", "")
             if (db_tmp == db) { // Selected snapshot
               selected = true;
               selected_db_index = i;
@@ -50,7 +50,7 @@
             db_tmp = db_tmp.replace("_", " ").split(" ")
             db_name = db_tmp[0] + "_" + db_tmp[1].replaceAll(":", "-")
             title = db_tmp[0] + " " + db_tmp[1].replaceAll("-", ":")
-            snapshots.push({"db": db_name, "title": title, "selected": selected});
+            snapshots.push({"db": db_name, "title": title, "selected": selected, "size": data.databases[i]["size"]});
           }
 
           console.log("Snapshots:", snapshots)
@@ -67,7 +67,8 @@
                 a_class = "selected_snapshot_link"
             }                  
             
-            li.innerHTML = "<span class=" + entry_class + "><a class=\"snapshot_link " + a_class + "\" style=\"display: inline-block; width: 160px;\" href=" + url_from_snapshot_index(i) + ">" + snapshots[i].title + "</a></span>"
+            li.innerHTML = "<span class=" + entry_class + "><a class=\"snapshot_link " + a_class + "\" style=\"display: inline-block; width: 240px;\" href=" + 
+              url_from_snapshot_index(i) + ">" + snapshots[i].title + " (" + Math.round(snapshots[i].size / 1024 / 1024) + " MB)</a></span>"
             li.className = "snapshot"                        
             list.appendChild(li);
           }

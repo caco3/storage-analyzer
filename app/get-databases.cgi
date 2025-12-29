@@ -9,6 +9,6 @@ echo ""
 
 echo "{"\"databases\"": ["
 for f in `ls -c1 $DB_FOLDER/duc_*.db.zst | sort`; do
-    echo "\"${f%.zst}\", "
+    echo "{\"name\": \"${f%.zst}\", \"size\": $(stat -c%s "$f")}, "
 done
 echo "0 ]}"
