@@ -12,9 +12,10 @@ DATABASE_FILE="duc_"`date +"%Y-%m-%d_%H-%M-%S".db`
 LOG_FILE="${DUC_LOG_FILE:-/var/log/duc.log}"
 LOCK_DIR="/tmp/scan.lock"
 
-echo "Excluding files/folders with the following patterns: $EXCLUDE"
-EXCLUDE=`echo $EXCLUDE | sed "s/,/ /g"`
-EXCLUDE=( `for a in ${EXCLUDE[@]}; do echo -n "--exclude $a "; done` )
+EXCLUDE_RAW="${EXCLUDE:-}"
+echo "Excluding files/folders with the following patterns: ${EXCLUDE_RAW}"
+EXCLUDE_RAW=$(echo "$EXCLUDE_RAW" | sed "s/,/ /g")
+EXCLUDE=( $(for a in ${EXCLUDE_RAW}; do echo -n "--exclude $a "; done) )
 
 # Acquire lock atomically using mkdir (portable). If it exists, just exit silently.
 if mkdir "$LOCK_DIR" 2>/dev/null; then
