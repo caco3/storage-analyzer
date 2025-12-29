@@ -9,7 +9,8 @@
       console.log("ready");
 
       /* Show main_sidebar only if duc.cgi is in the URL */
-      if ((location.href.indexOf("duc.cgi") !== -1) || (location.href.indexOf("error.cgi") !== -1) || (location.href.indexOf("") !== -1)) {
+      console.log("URL:", location.href);
+      if ((location.href.indexOf("duc.cgi") !== -1) || (location.href.indexOf("/?db") !== -1) || (location.href.indexOf("error.cgi") !== -1) ) {
         document.getElementById("main_sidebar").style.display = "inline";
       }
 
@@ -26,7 +27,7 @@
           db = (new URL(location.href)).searchParams.get('db')
           if (db == null) {
             console.log("No 'db' parameter in URL, selecting latest DB");
-            db = data.databases[data.databases.length - 1]
+            db = data.databases[data.databases.length - 1]["db"]
           }
           console.log("Selected DB: " + db)
 
@@ -54,42 +55,41 @@
           }
 
           console.log("Snapshots:", snapshots)
+          console.log("selected index: " + selected_db_index);
 
-          /* Format the list */
-          list = document.getElementById("databases_list")
-          console.log(snapshots.length + " snapshots available");
-          for(let i = 0; i < snapshots.length; i++) {
-            let li = document.createElement('li');
-            
-            let entry_class = "not_selected_snapshot"
-            let a_class = ""
-            if (snapshots[i].selected == true) { // Selected snapshot
-                entry_class = "selected_snapshot"
-                a_class = "selected_snapshot_link"
-            }                  
-            
-            li.innerHTML = "<span class=" + entry_class + "><a class=\"snapshot_link " + a_class + "\" style=\"display: inline-block; width: 240px;\" href=" + 
-              url_from_snapshot_index(i) + ">" + snapshots[i].title + " (" + Math.round(snapshots[i].size * 10 / 1024 / 1024 / 1024) / 10 + " GB)</a></span>"
-            li.className = "snapshot"                        
-            list.appendChild(li);
-          }
-          
-          /* Convert path to URL */
-          p = document.getElementById("path");
-          console.log("selected_db_index: " + selected_db_index);
-          p.innerHTML = url_from_snapshot_index(selected_db_index); // Select latest snapshot
+          if (db != null) {
+            /* Format the list */
+            list = document.getElementById("databases_list")
+            console.log(snapshots.length + " snapshots available");
+            for(let i = 0; i < snapshots.length; i++) {
+              let li = document.createElement('li');
+              
+              let entry_class = "not_selected_snapshot"
+              let a_class = ""
+              if (snapshots[i].selected == true) { // Selected snapshot
+                  entry_class = "selected_snapshot"
+                  a_class = "selected_snapshot_link"
+              }                  
+              
+              li.innerHTML = "<span class=" + entry_class + "><a class=\"snapshot_link " + a_class + "\" style=\"display: inline-block; width: 240px;\" href=" + 
+                url_from_snapshot_index(i) + ">" + snapshots[i].title + " (" + Math.round(snapshots[i].size * 10 / 1024 / 1024 / 1024) / 10 + " GB)</a></span>"
+              li.className = "snapshot"                        
+              list.appendChild(li);
+            }
 
-          console.log("Path: " + path);
-          folders = path.split("/")
-          console.log("Folders: " + folders);
-          f = "";
-          txt = "<span class=\"not_selected_snapshot\"><a class=\"snapshot_link\" href='" + url_from_path(db, "/scan") + "'>/</a></span> &gt; ";
-          for (let i = 2; i < folders.length; i++) {
-            f += folders[i] + "/";
-            console.log("Folder: " + f.slice(0, -1));
-            txt += "<span class=\"not_selected_snapshot\"><a class=\"snapshot_link\" href='" + url_from_path(db, "/scan/" + f.slice(0, -1)) + "'>" + folders[i] + "</a></span> &gt; ";
+            /* Convert path to URL */
+            p = document.getElementById("path");
+            p.innerHTML = url_from_snapshot_index(selected_db_index); // Select latest snapshot
+
+            folders = path.split("/")
+            f = "";
+            txt = "<span class=\"not_selected_snapshot\"><a class=\"snapshot_link\" href='" + url_from_path(db, "/scan") + "'>/</a></span> &gt; ";
+            for (let i = 2; i < folders.length; i++) {
+              f += folders[i] + "/";
+              txt += "<span class=\"not_selected_snapshot\"><a class=\"snapshot_link\" href='" + url_from_path(db, "/scan/" + f.slice(0, -1)) + "'>" + folders[i] + "</a></span> &gt; ";
+            }
+            p.innerHTML = txt;
           }
-          p.innerHTML = txt;
         },
         error: function (xhr, ajaxOptions, thrownError) {
           // Error callback
@@ -123,7 +123,7 @@
     function url_from_snapshot_index(index) {
       if (index < 0 || index >= snapshots.length) {
         console.log("Index out of bounds: " + index);
-        return "#";
+        index = snapshots.length - 1;
       }
       return "duc.cgi?cmd=index&db=/database/duc_" + snapshots[index].db + ".db&path=" + path;
     }
