@@ -1,186 +1,167 @@
-  <script src="jquery.min.js"></script>
-  <link type="text/css" rel="stylesheet" href="jquery.firework.css">
-  <script type="text/javascript" src="jquery.firework.js"></script>
-  <script type="text/javascript">
-    var snapshots = [];
-    var db = null;
-    var path = null;
-    var selected_db_index = 0;
+<script src="jquery.min.js"></script>
+<link rel="stylesheet" href="jquery.firework.css">
+<script src="jquery.firework.js"></script>
+<script>
+  var snapshots = [];
+  var db = null;
+  var path = null;
+  var selectedIndex = 0;
 
-    $(document).ready(function() {
-      console.log("ready");
+  function formatSize(bytes) {
+    if (bytes > 1024 * 1024 * 1024) {
+      return (Math.round(bytes * 10 / 1024 / 1024 / 1024) / 10) + ' GB';
+    } else if (bytes > 1024 * 1024) {
+      return (Math.round(bytes * 10 / 1024 / 1024) / 10) + ' MB';
+    } else if (bytes > 1024) {
+      return (Math.round(bytes * 10 / 1024) / 10) + ' KB';
+    } else if (bytes > 0) {
+      return bytes + ' B';
+    }
+    return '';
+  }
 
-      /* Show main_sidebar only if duc.cgi is in the URL */
-      console.log("URL:", location.href);
-      if ((location.href.indexOf("duc.cgi") !== -1) || (location.href.indexOf("/?db") !== -1) || (location.href.indexOf("error.cgi") !== -1) ) {
-        document.getElementById("main_sidebar").style.display = "inline";
-      }
+  function urlFromIndex(index) {
+    if (index < 0 || index >= snapshots.length) {
+      firework.launch('Invalid snapshot index', 'danger', 2000);
+      index = snapshots.length - 1;
+    }
+    return 'duc.cgi?cmd=index&db=/database/duc_' + snapshots[index].db + '.db&path=' + path;
+  }
 
-      /* Fetch list of databases and fill them into the list */
-      $.ajax("get-databases.cgi", {
-        success: function (data) {
-          // Success callback function
-          console.log(data)
-          
-          /* Delete the last one entry since it is always "0" */
-          data.databases.pop()
+  function urlFromPath(db, p) {
+    return 'duc.cgi?cmd=index&db=/database/duc_' + db + '.db&path=' + p;
+  }
+
+  function parseDbName(name) {
+    var parts = name.replace('/database/duc_', '').replace('.db', '').replace('_', ' ').split(' ');
+    return {
+      db: parts[0] + '_' + parts[1].replaceAll(':', '-'),
+      title: parts[0] + ' ' + parts[1].split('_')[0].replaceAll('-', ':')
+    };
+  }
+
+  function renderSnapshots() {
+    var list = $('#databases_list');
+    list.empty();
+
+    snapshots.forEach(function(snap, i) {
+      var cls = snap.selected ? 'selected_snapshot' : 'not_selected_snapshot';
+      var linkCls = snap.selected ? 'snapshot_link selected_snapshot_link' : 'snapshot_link';
+      var sizeText = snap.size > 0 ? ' (' + formatSize(snap.size) + ')' : '';
+      
+      var li = $('<li class="snapshot"></li>');
+      li.html('<span class="' + cls + '"><a class="' + linkCls + '" href="' + urlFromIndex(i) + '">' + 
+              snap.title + sizeText + '</a></span>');
+      list.append(li);
+    });
+  }
+
+  function renderBreadcrumb() {
+    var folders = path.split('/');
+    var crumbs = '<span class="not_selected_snapshot"><a class="snapshot_link" href="' + 
+                 urlFromPath(db, '/scan') + '">/</a></span>';
+    var f = '';
     
-          /* Extract the parameters from the URL */
-          db = (new URL(location.href)).searchParams.get('db')
-          if (db == null) {
-            console.log("No 'db' parameter in URL, selecting latest DB");
-            db = data.databases[data.databases.length - 1]["db"]
-          }
-          console.log("Selected DB: " + db)
+    for (var i = 2; i < folders.length; i++) {
+      f += folders[i] + '/';
+      crumbs += ' <span class="breadcrumb-sep">›</span> <span class="not_selected_snapshot"><a class="snapshot_link" href="' + 
+                urlFromPath(db, '/scan/' + f.slice(0, -1)) + '">' + folders[i] + '</a></span>';
+    }
+    
+    $('#path').html(crumbs);
+  }
 
-          path = (new URL(location.href)).searchParams.get('path')
-          if (path == null) {
-            console.log("No 'path' parameter in URL, selecting '/scan'");
-            path = "/scan"
-          }
-          //path = path.split("?")[0]
-          console.log("Path: " + path)
+  $(document).ready(function() {
+    var url = new URL(location.href);
+    var showSidebar = url.href.indexOf('duc.cgi') !== -1 || 
+                      url.href.indexOf('/?db') !== -1 || 
+                      url.href.indexOf('error.cgi') !== -1;
 
-          /* Iterate through the list */
-          for(let i = 0; i < data.databases.length; i++) {
-            let selected = false;
-            db_tmp = data.databases[i]["name"]
-            if (db_tmp == db) { // Selected snapshot
-              selected = true;
-              selected_db_index = i;
-            }
+    if (showSidebar) {
+      $('#main_sidebar').show();
+    }
 
-            db_tmp = db_tmp.replace("/database/duc_", "").replace(".db", "").replace("_", " ").split(" ")
-            db_name = db_tmp[0] + "_" + db_tmp[1].replaceAll(":", "-")
-            title = db_tmp[0] + " " + db_tmp[1].split("_")[0].replaceAll("-", ":")
-            snapshots.push({"db": db_name, "title": title, "selected": selected, "size": data.databases[i]["size"]});
-          }
-
-          console.log("Snapshots:", snapshots)
-          console.log("selected index: " + selected_db_index);
-
-          if (db != null) {
-            /* Format the list */
-            list = document.getElementById("databases_list")
-            console.log(snapshots.length + " snapshots available");
-            for(let i = 0; i < snapshots.length; i++) {
-              let li = document.createElement('li');
-              
-              let entry_class = "not_selected_snapshot"
-              let a_class = ""
-              if (snapshots[i].selected == true) { // Selected snapshot
-                  entry_class = "selected_snapshot"
-                  a_class = "selected_snapshot_link"
-              }                  
-              
-              size_text = "";
-              if (snapshots[i].size > (1024*1024*1024)) { // > 1 GB
-                size_text = " (" + Math.round(snapshots[i].size * 10 / 1024 / 1024 / 1024) / 10 + " GB)";
-              }
-              else if (snapshots[i].size > (1024*1024)) { // > 1 MB
-                size_text = " (" + Math.round(snapshots[i].size * 10 / 1024 / 1024) / 10 + " MB)";
-              }
-              else if (snapshots[i].size > (1024)) { // > 1 KB
-                size_text = " (" + Math.round(snapshots[i].size * 10 / 1024) / 10 + " KB)";
-              }
-              else { // <= 1 KB
-                size_text = " (" + Math.round(snapshots[i].size * 10) / 10 + " B)";
-              }
-
-              li.innerHTML = "<span class=" + entry_class + "><a class=\"snapshot_link " + a_class + "\" style=\"display: inline-block; width: 240px;\" href=" + 
-                url_from_snapshot_index(i) + ">" + snapshots[i].title + size_text + "</a></span>"
-              li.className = "snapshot"                        
-              list.appendChild(li);
-            }
-
-            /* Convert path to URL */
-            p = document.getElementById("path");
-            p.innerHTML = url_from_snapshot_index(selected_db_index); // Select latest snapshot
-
-            folders = path.split("/")
-            f = "";
-            txt = "<span class=\"not_selected_snapshot\"><a class=\"snapshot_link\" href='" + url_from_path(db, "/scan") + "'>/</a></span> &gt; ";
-            for (let i = 2; i < folders.length; i++) {
-              f += folders[i] + "/";
-              txt += "<span class=\"not_selected_snapshot\"><a class=\"snapshot_link\" href='" + url_from_path(db, "/scan/" + f.slice(0, -1)) + "'>" + folders[i] + "</a></span> &gt; ";
-            }
-            p.innerHTML = txt;
-          }
-        },
-        error: function (xhr, ajaxOptions, thrownError) {
-          // Error callback
-          console.log("Error, failed to fetch get-databases.cgi: " + xhr.status + ", " + thrownError + "!");
-          firework.launch('Failed to load snapshots: ' + thrownError, 'danger', 5000);
-          document.getElementById("databases").innerHTML = "Failed to read the list of snapshots!<br>Error: " + xhr.status + ", " + thrownError + "!"
-        },
-      });
-
-      document.addEventListener('keypress', function(event) {
-        var key = event.key.toLowerCase();
-        console.log("Key pressed: " + key);
-
-        if (key == "p") {
-          /* Get snapshot before the selected one */
-          if (selected_db_index > 0) {
-            index = selected_db_index - 1;
-            window.location.href = url_from_snapshot_index(index)
-          }
-          else {
-            firework.launch('Already at first snapshot', 'success', 1500);
-          }
-
-        } else if (key == "n") {
-          /* Get snapshot after the selected one */
-          if (selected_db_index < snapshots.length - 1) {
-            index = selected_db_index + 1;
-            window.location.href = url_from_snapshot_index(index)
-          }
-          else {
-            firework.launch('Already at last snapshot', 'success', 1500);
-          }
+    $.ajax('get-databases.cgi', {
+      success: function(data) {
+        data.databases.pop();
+        
+        db = url.searchParams.get('db');
+        if (!db && data.databases.length > 0) {
+          db = data.databases[data.databases.length - 1]['db'];
         }
-      })
-    })
 
+        path = url.searchParams.get('path') || '/scan';
 
-    function url_from_snapshot_index(index) {
-      if (index < 0 || index >= snapshots.length) {
-        console.log("Index out of bounds: " + index);
-        firework.launch('Invalid snapshot index', 'danger', 2000);
-        index = snapshots.length - 1;
+        data.databases.forEach(function(item, i) {
+          var parsed = parseDbName(item.name);
+          var isSelected = item.name === db;
+          if (isSelected) selectedIndex = i;
+          
+          snapshots.push({
+            db: parsed.db,
+            title: parsed.title,
+            selected: isSelected,
+            size: item.size
+          });
+        });
+
+        if (db) {
+          renderSnapshots();
+          renderBreadcrumb();
+        }
+      },
+      error: function(xhr, status, error) {
+        firework.launch('Failed to load snapshots: ' + error, 'danger', 5000);
+        $('#databases').html('<p class="error">Failed to load snapshots</p>');
       }
-      return "duc.cgi?cmd=index&db=/database/duc_" + snapshots[index].db + ".db&path=" + path;
-    }
+    });
 
+    $(document).on('keypress', function(e) {
+      var key = e.key.toLowerCase();
+      
+      if (key === 'p' && selectedIndex > 0) {
+        window.location.href = urlFromIndex(selectedIndex - 1);
+      } else if (key === 'p') {
+        firework.launch('Already at first snapshot', 'success', 1500);
+      } else if (key === 'n' && selectedIndex < snapshots.length - 1) {
+        window.location.href = urlFromIndex(selectedIndex + 1);
+      } else if (key === 'n') {
+        firework.launch('Already at last snapshot', 'success', 1500);
+      }
+    });
+  });
+</script>
 
-    function url_from_path(db, path) {
-      return "duc.cgi?cmd=index&db=/database/duc_" + db + ".db&path=" + path;
-    }
-  </script>
-
-
-  <div id=sidebar>
-      <div style="padding: 0;  margin-bottom: 20px;">
-          <div style="padding: 0;"><a href="/"><img src=logo.png width=70px style="float: left; padding-left: 0"></a></div>
-          <div style="float: none; margin-left: 70px;"><a href="/" style="text-decoration: none"><h1>Storage Analyzer</h1></a></div>
-      </div>
-
-      <ul id="navigation_list">
-        <li class="nav-li"><span class="not_selected_snapshot"><a class="snapshot_link " href="duc.cgi">Main</a></span></li>
-        <li class="nav-li"><span class="not_selected_snapshot"><a class="snapshot_link " href="manage-snapshots.cgi">Manage</a></span></li>
-        <li class="nav-li"><span class="not_selected_snapshot"><a class="snapshot_link " href="show-log.cgi">Log</a></span></li>
-        <li class="nav-li"><span class="not_selected_snapshot"><a class="snapshot_link " href="show-help.cgi">Help</a></span></li>
-      </ul>
-
-      <div id="main_sidebar">
-        <h3 style="margin-top: 5px; margin-bottom: 0; margin-left: 10px;">Keyboard shortcuts</h3>
-        <p style="margin-top: 5px; margin-bottom: 0; margin-left: 10px;"><strong>n</strong>: next snapshot<br><strong>p</strong>: previous snapshot</p>
-
-        <h2 style="margin-top: 10px; margin-bottom: 0; margin-left: 10px;">Snapshots</h2>
-        <div id=databases><ul id="databases_list" style="margin:0"></ul></div>
-      </div>
+<div id="sidebar">
+  <div class="logo-section">
+    <a href="/"><img src="logo.png" alt="Logo" class="logo"></a>
+    <a href="/" class="site-title"><h1>Storage Analyzer</h1></a>
   </div>
-  <div id=content2 >
-    <div id=content_header_div style="width: 80%"><h2 id=content_header>Snapshot</h2></div>
-    <div id=content style="float: left;">
+
+  <nav>
+    <ul id="navigation_list">
+      <li class="nav-li"><span class="not_selected_snapshot"><a class="snapshot_link" href="duc.cgi">Main</a></span></li>
+      <li class="nav-li"><span class="not_selected_snapshot"><a class="snapshot_link" href="manage-snapshots.cgi">Manage</a></span></li>
+      <li class="nav-li"><span class="not_selected_snapshot"><a class="snapshot_link" href="show-log.cgi">Log</a></span></li>
+      <li class="nav-li"><span class="not_selected_snapshot"><a class="snapshot_link" href="show-help.cgi">Help</a></span></li>
+    </ul>
+  </nav>
+
+  <div id="main_sidebar">
+    <div class="keyboard-shortcuts">
+      <h3>Keyboard shortcuts</h3>
+      <p><strong>n</strong>: next snapshot<br><strong>p</strong>: previous snapshot</p>
+    </div>
+
+    <h3>Snapshots</h3>
+    <div id="databases">
+      <ul id="databases_list"></ul>
+    </div>
   </div>
+</div>
+
+<div id="content2">
+  <div id="content_header_div">
+    <h2 id="content_header">Snapshot</h2>
+  </div>
+  <div id="content">
