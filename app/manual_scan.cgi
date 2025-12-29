@@ -22,7 +22,7 @@ cat header.htm | sed 's/Snapshot/Manual Scan/'
 
 if [ -d "$LOCK_DIR" ]; then
     echo "A scan is already in progress:"; echo
-    echo -n "<div style=\"border: 1px solid black; background: white; padding: 10px; font-family: monospace; white-space: pre;\">"
+    echo -n "<div style=\"border: 1px solid black; background: white; padding: 10px; font-family: monospace; white-space: pre; min-width: 500px;\">"
     cat "$LOG_FILE"
     echo "</div>"
 elif [ -d "$REQUEST_DIR" ]; then
