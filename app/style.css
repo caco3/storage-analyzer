@@ -59,11 +59,52 @@ a:hover {
   border-bottom: 2px solid #006680;
 }
 
+/* Make the content header readable on the gradient background */
+#content_header_div {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  padding: 12px 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#content_header {
+  color: #006680;
+  border-bottom: 2px solid #006680;
+}
+
 #content {
   background: white;
   border-radius: 8px;
   padding: 15px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Higher contrast titles on gradient background */
+#sidebar h1,
+#sidebar h2,
+#sidebar h3 {
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+/* Only the site title link should be white in the sidebar.
+   Other sidebar links (nav/snapshots) are styled as buttons and need dark text for readability. */
+#sidebar .site-title,
+#sidebar .site-title:hover {
+  color: #ffffff;
+  text-decoration: none;
+}
+
+#sidebar .site-title h1 {
+  color: #ffffff;
+}
+
+/* Keep headings inside content readable and consistent */
+#content h1,
+#content h2,
+#content h3 {
+  color: #006680;
+  text-shadow: none;
 }
 
 /* Navigation */
@@ -188,8 +229,8 @@ ul {
 #main { margin: 0; padding: 0; }
 #index { border-bottom: solid 1px #ddd; margin-bottom: 15px; }
 #index table td { padding: 5px 10px; }
-#graph { float: left; margin-right: 20px; }
-#list { float: left; }
+#graph { float: left; margin-right: 20px; margin-top: 30px; }
+#list { float: left; margin-top: 60px;}
 #list table { 
   border-collapse: collapse;
   background: white;
@@ -345,6 +386,18 @@ hr {
 .keyboard-shortcuts p {
   margin: 0;
   font-size: 12px;
+}
+
+/* Improve contrast for keyboard shortcuts in the sidebar */
+#sidebar .keyboard-shortcuts p,
+#sidebar .keyboard-shortcuts strong {
+  color: rgba(255, 255, 255, 0.95);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+/* Sidebar <hr> should be visible on the gradient background */
+#sidebar hr {
+  background: rgba(255, 255, 255, 0.35);
 }
 
 /* Breadcrumb */

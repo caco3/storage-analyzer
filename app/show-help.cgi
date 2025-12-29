@@ -14,10 +14,10 @@ cat <<EOF
  <body>
 EOF
 
-cat header.htm | sed 's/Snapshot//'
+cat header.htm | sed 's/Snapshot/Help/'
 
 cat <<EOF
-      <h2>Help</h2>
+      <h2>Manual</h2>
       <a href=https://github.com/caco3/storage-analyzer/blob/main/README.md target=_blank>Online Help</a></p>
       <h2>About</h2>
       <p>Copyrght &copy; 2025 by <a href=https://github.com/caco3/storage-analyzer target=_blank>caco3</a></p>
