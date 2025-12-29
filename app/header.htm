@@ -71,8 +71,22 @@
                   a_class = "selected_snapshot_link"
               }                  
               
+              size_text = "";
+              if (snapshots[i].size > (1024*1024*1024)) { // > 1 GB
+                size_text = " (" + Math.round(snapshots[i].size * 10 / 1024 / 1024 / 1024) / 10 + " GB)";
+              }
+              else if (snapshots[i].size > (1024*1024)) { // > 1 MB
+                size_text = " (" + Math.round(snapshots[i].size * 10 / 1024 / 1024) / 10 + " MB)";
+              }
+              else if (snapshots[i].size > (1024)) { // > 1 KB
+                size_text = " (" + Math.round(snapshots[i].size * 10 / 1024) / 10 + " KB)";
+              }
+              else { // <= 1 KB
+                size_text = " (" + Math.round(snapshots[i].size * 10) / 10 + " B)";
+              }
+
               li.innerHTML = "<span class=" + entry_class + "><a class=\"snapshot_link " + a_class + "\" style=\"display: inline-block; width: 240px;\" href=" + 
-                url_from_snapshot_index(i) + ">" + snapshots[i].title + " (" + Math.round(snapshots[i].size * 10 / 1024 / 1024 / 1024) / 10 + " GB)</a></span>"
+                url_from_snapshot_index(i) + ">" + snapshots[i].title + size_text + "</a></span>"
               li.className = "snapshot"                        
               list.appendChild(li);
             }
