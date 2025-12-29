@@ -79,7 +79,7 @@
           for (let i = 2; i < folders.length; i++) {
             f += folders[i] + "/";
             console.log("Folder: " + f.slice(0, -1));
-            txt += "<span class=\"not_selected_snapshot\"><a class=\"snapshot_link\" href='" + url_from_path(db, "/scan/" + f.slice(0, -1)) + "'>" + folders[i] + "</a></span> &gt; ";
+            txt += "<span class=\"not_selected_snapshot\"><a href='" + url_from_path(db, "/scan/" + f.slice(0, -1)) + "'>" + folders[i] + "</a></span> &gt; ";
           }
           p.innerHTML = txt;
         },

@@ -1,35 +1,127 @@
 diff --git a/src/duc/cmd-cgi.c b/src/duc/cmd-cgi.c
-index f2c4ec5..4bbaa0c 100644
+index f2c4ec5..f9b2584 100644
 --- a/src/duc/cmd-cgi.c
 +++ b/src/duc/cmd-cgi.c
-@@ -340,7 +340,7 @@ static void do_index(duc *duc, duc_graph *graph, duc_dir *dir)
- 	printf("<div id=index>");
- 	printf(" <table>\n");
- 	printf("  <tr>\n");
--	printf("   <th>Path</th>\n");
-+	/*printf("   <th>Path</th>\n");**/
- 	printf("   <th>Size</th>\n");
- 	printf("   <th>Files</th>\n");
- 	printf("   <th>Directories</th>\n");
-@@ -363,11 +363,11 @@ static void do_index(duc *duc, duc_graph *graph, duc_dir *dir)
- 		duc_human_size(&report->size, st, 0, siz, sizeof siz);
+@@ -406,7 +406,6 @@ static void do_index(duc *duc, duc_graph *graph, duc_dir *dir)
+ 			char siz[32];
+ 			duc_human_size(&e->size, st, opt_bytes, siz, sizeof siz);
+ 			printf("  <tr><td class=name>");
+-
+ 			if(e->type == DUC_FILE_TYPE_DIR) {
+ 				printf("<a href=\"%s&db=%s&path=", url, opt_database);
+ 				print_cgi(path);
+@@ -415,6 +414,15 @@ static void do_index(duc *duc, duc_graph *graph, duc_dir *dir)
+ 				printf("\">");
+ 			}
  
- 		printf("  <tr>\n");
--		printf("   <td><a href=\"%s&db=%s&path=", url, opt_database);
-+		/*printf("   <td><a href=\"%s&db=%s&path=", url, opt_database);
- 		print_cgi(report->path);
- 		printf("\">");
- 		print_html(report->path);
--		printf("</a></td>\n");
-+		printf("</a></td>\n");**/
- 		printf("   <td>%s</td>\n", siz);
- 		printf("   <td>%zu</td>\n", report->file_count);
- 		printf("   <td>%zu</td>\n", report->dir_count);
-@@ -379,6 +379,7 @@ static void do_index(duc *duc, duc_graph *graph, duc_dir *dir)
- 		i++;
- 	}
- 	printf(" </table>\n");
-+	printf(" <div id=path>%s</div>\n", duc_dir_get_path(dir));
++			double r, g, b;
++			if(duc_graph_get_color(graph, e->name, &r, &g, &b)) {
++				printf("<div style=\"width: 16px; height: 16px; background-color: #%02x%02x%02x; border: 1px solid #333; padding: 0; margin-right: 4px; float: left;\"></div>",
++				       (int)(r * 255), (int)(g * 255), (int)(b * 255));
++			}
++			else {
++				printf("<div style=\"width: 18px; height: 18px; padding: 0; margin-right: 4px; float: left;\"></div>");
++			}
++
+ 			print_html(e->name);
  
- 	if(path) {
- 		printf("<div id=graph>\n");
+ 			if(e->type == DUC_FILE_TYPE_DIR) 
+diff --git a/src/libduc-graph/duc-graph.h b/src/libduc-graph/duc-graph.h
+index 121f648..9f23c15 100644
+--- a/src/libduc-graph/duc-graph.h
++++ b/src/libduc-graph/duc-graph.h
+@@ -54,5 +54,7 @@ void duc_graph_set_gradient(duc_graph *g, int onoff);
+ 
+ int duc_graph_draw(duc_graph *g, duc_dir *dir);
+ duc_dir *duc_graph_find_spot(duc_graph *g, duc_dir *dir, double x, double y, struct duc_dirent **ent);
++int duc_graph_get_color(duc_graph *g, const char *name, double *r, double *g_out, double *b);
++void duc_graph_clear_colors(duc_graph *g);
+ 
+ #endif
+diff --git a/src/libduc-graph/graph-private.h b/src/libduc-graph/graph-private.h
+index 132a868..c775c86 100644
+--- a/src/libduc-graph/graph-private.h
++++ b/src/libduc-graph/graph-private.h
+@@ -14,6 +14,12 @@ struct label {
+ 	struct label *next;
+ };
+ 
++struct duc_color_entry {
++	char *name;
++	double r, g, b;
++	struct duc_color_entry *next;
++};
++
+ 
+ struct duc_graph_backend {
+ 	void (*free)(duc_graph *g);
+@@ -54,6 +60,7 @@ struct duc_graph {
+ 	/* Reusable runtime info. Cleared after each graph_draw_* call */
+ 
+ 	struct label *label_list;
++	struct duc_color_entry *color_list;
+ 	double spot_a;
+ 	double spot_r;
+ 	duc_dir *spot_dir;
+diff --git a/src/libduc-graph/graph.c b/src/libduc-graph/graph.c
+index af4227b..57fc83c 100644
+--- a/src/libduc-graph/graph.c
++++ b/src/libduc-graph/graph.c
+@@ -41,6 +41,7 @@ duc_graph *duc_graph_new(duc *duc)
+ 
+ void duc_graph_free(duc_graph *g)
+ {
++	duc_graph_clear_colors(g);
+ 	if(g->backend)
+ 		g->backend->free(g);
+ 	free(g);
+@@ -325,6 +326,16 @@ static int do_dir(duc_graph *g, duc_dir *dir, int level, double r1, double a1_di
+ 
+ 		double R, G, B;
+ 		hsv2rgb(H, S, V, &R, &G, &B);
++
++		/* Store color for this entry (only at level 0 for do_index use) */
++		if(level == 0) {
++			struct duc_color_entry *ce = duc_malloc(sizeof *ce);
++			ce->name = duc_strdup(e->name);
++			ce->r = R;
++			ce->g = G;
++			ce->b = B;
++			LL_APPEND(g->color_list, ce);
++		}
+ 		
+ 		if(e->type != DUC_FILE_TYPE_DIR) S *= 0.5;
+ 
+@@ -518,6 +529,32 @@ duc_dir *duc_graph_find_spot(duc_graph *g, duc_dir *dir, double x, double y, str
+ 	return dir2;
+ }
+ 
++int duc_graph_get_color(duc_graph *g, const char *name, double *r, double *g_out, double *b)
++{
++	struct duc_color_entry *ce;
++	LL_FOREACH(g->color_list, ce) {
++		if(strcmp(ce->name, name) == 0) {
++			*r = ce->r;
++			*g_out = ce->g;
++			*b = ce->b;
++			return 1;
++		}
++	}
++	return 0;
++}
++
++
++void duc_graph_clear_colors(duc_graph *g)
++{
++	struct duc_color_entry *ce, *tmp;
++	LL_FOREACH_SAFE(g->color_list, ce, tmp) {
++		free(ce->name);
++		free(ce);
++	}
++	g->color_list = NULL;
++}
++
++
+ /*
+  * End
+  */
