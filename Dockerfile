@@ -75,6 +75,7 @@ COPY app/*.png /var/www/html/
 COPY app/*.ico /var/www/html/
 COPY app/*.htm /var/www/html/
 COPY app/*.css /var/www/html/
+COPY app/*.js /var/www/html/
 
 COPY app/startup.sh /startup.sh
 COPY app/scan.sh /scan.sh
