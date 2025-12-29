@@ -1,4 +1,6 @@
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <link type="text/css" rel="stylesheet" href="jquery.firework.css">
+  <script type="text/javascript" src="jquery.firework.js"></script>
   <script type="text/javascript">
     var snapshots = [];
     var db = null;
@@ -27,6 +29,7 @@
           db = (new URL(location.href)).searchParams.get('db')
           if (db == null) {
             console.log("No 'db' parameter in URL, selecting latest DB");
+            firework.launch('No snapshot specified, using latest snapshot', 'warning', 2000);
             db = data.databases[data.databases.length - 1]["db"]
           }
           console.log("Selected DB: " + db)
@@ -34,6 +37,7 @@
           path = (new URL(location.href)).searchParams.get('path')
           if (path == null) {
             console.log("No 'path' parameter in URL, selecting '/scan'");
+            firework.launch('No path specified, using top folder', 'warning', 2000);
             path = "/scan"
           }
           //path = path.split("?")[0]
@@ -108,6 +112,7 @@
         error: function (xhr, ajaxOptions, thrownError) {
           // Error callback
           console.log("Error, failed to fetch get-databases.cgi: " + xhr.status + ", " + thrownError + "!");
+          firework.launch('Failed to load snapshots: ' + thrownError, 'danger', 5000);
           document.getElementById("databases").innerHTML = "Failed to read the list of snapshots!<br>Error: " + xhr.status + ", " + thrownError + "!"
         },
       });
@@ -122,12 +127,18 @@
             index = selected_db_index - 1;
             window.location.href = url_from_snapshot_index(index)
           }
+          else {
+            firework.launch('Already at first snapshot', 'success', 1500);
+          }
 
         } else if (key == "n") {
           /* Get snapshot after the selected one */
           if (selected_db_index < snapshots.length - 1) {
             index = selected_db_index + 1;
             window.location.href = url_from_snapshot_index(index)
+          }
+          else {
+            firework.launch('Already at last snapshot', 'success', 1500);
           }
         }
       })
@@ -137,6 +148,7 @@
     function url_from_snapshot_index(index) {
       if (index < 0 || index >= snapshots.length) {
         console.log("Index out of bounds: " + index);
+        firework.launch('Invalid snapshot index', 'danger', 2000);
         index = snapshots.length - 1;
       }
       return "duc.cgi?cmd=index&db=/database/duc_" + snapshots[index].db + ".db&path=" + path;
