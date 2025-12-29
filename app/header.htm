@@ -49,7 +49,7 @@
 
             db_tmp = db_tmp.replace("_", " ").split(" ")
             db_name = db_tmp[0] + "_" + db_tmp[1].replaceAll(":", "-")
-            title = db_tmp[0] + " " + db_tmp[1].replaceAll("-", ":")
+            title = db_tmp[0] + " " + db_tmp[1].split("_")[0].replaceAll("-", ":")
             snapshots.push({"db": db_name, "title": title, "selected": selected, "size": data.databases[i]["size"]});
           }
 
@@ -68,7 +68,7 @@
             }                  
             
             li.innerHTML = "<span class=" + entry_class + "><a class=\"snapshot_link " + a_class + "\" style=\"display: inline-block; width: 240px;\" href=" + 
-              url_from_snapshot_index(i) + ">" + snapshots[i].title + " (" + Math.round(snapshots[i].size / 1024 / 1024) + " MB)</a></span>"
+              url_from_snapshot_index(i) + ">" + snapshots[i].title + " (" + Math.round(snapshots[i].size * 10 / 1024 / 1024 / 1024) / 10 + " GB)</a></span>"
             li.className = "snapshot"                        
             list.appendChild(li);
           }

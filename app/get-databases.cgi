@@ -9,6 +9,14 @@ echo ""
 
 echo "{"\"databases\"": ["
 for f in `ls -c1 $DB_FOLDER/duc_*.db.zst | sort`; do
-    echo "{\"name\": \"${f%.zst}\", \"size\": $(stat -c%s "$f")}, "
+    count=$(echo "$f" | tr -cd '_' | wc -c)
+    if [ $count -eq 3 ]; then
+        size=$(echo "$f" | cut -d'_' -f4)
+        size=${size%.db.zst}
+    else
+        size=0
+    fi
+    f=${f%.zst}
+    echo "{\"name\": \"$f\", \"size\": $size},"
 done
 echo "0 ]}"

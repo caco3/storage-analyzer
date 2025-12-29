@@ -21,6 +21,16 @@ if mkdir "$LOCK_DIR" 2>/dev/null; then
         # --exclude=Selektion --exclude=Speziell --exclude=roms
         status=$?
         echo "End of scan: $(date) (exit code: $status)"
+
+        # Data Size
+        # 2025-12-29 08:06:01 2785165  343721 390117691392 /scan
+        DATA_SIZE=`/usr/local/bin/duc info -d $DATABASE -b | tail -n 1 | awk '{print $5}'`
+        echo "Data size: $((DATA_SIZE / 1024 / 1024)) MB ($DATA_SIZE bytes)"
+        # Rename database to include data size
+        NEW_DATABASE="${DATABASE%.db}_${DATA_SIZE}.db"
+        mv "$DATABASE" "$NEW_DATABASE"
+        DATABASE="$NEW_DATABASE"
+
         # Compress database
         echo "Compressing database: $DATABASE..."
         zstd -19 -f "$DATABASE" -o "$DATABASE.zst"
