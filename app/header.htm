@@ -75,11 +75,11 @@
           folders = path.split("/")
           console.log("Folders: " + folders);
           f = "";
-          txt = "";
-          for (let i = 0; i < folders.length; i++) {
+          txt = "<span class=\"not_selected_snapshot\"><a class=\"snapshot_link\" href='" + url_from_path(db, "/scan") + "'>/</a></span> &gt; ";
+          for (let i = 2; i < folders.length; i++) {
             f += folders[i] + "/";
             console.log("Folder: " + f.slice(0, -1));
-            txt += "<a href='" + url_from_path(db, f.slice(0, -1)) + "'>" + folders[i] + "</a> / ";
+            txt += "<span class=\"not_selected_snapshot\"><a class=\"snapshot_link\" href='" + url_from_path(db, "/scan/" + f.slice(0, -1)) + "'>" + folders[i] + "</a></span> &gt; ";
           }
           p.innerHTML = txt;
         },
