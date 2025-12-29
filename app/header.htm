@@ -29,7 +29,8 @@
   }
 
   function urlFromPath(db, p) {
-    return 'duc.cgi?cmd=index&db=/database/duc_' + db + '.db&path=' + p;
+    console.log(db);
+    return 'duc.cgi?cmd=index&db=' + db + '&path=' + p;
   }
 
   function parseDbName(name) {
@@ -122,11 +123,11 @@
       if (key === 'p' && selectedIndex > 0) {
         window.location.href = urlFromIndex(selectedIndex - 1);
       } else if (key === 'p') {
-        firework.launch('Already at first snapshot', 'success', 1500);
+        firework.launch('Already at oldest snapshot', 'success', 1500);
       } else if (key === 'n' && selectedIndex < snapshots.length - 1) {
         window.location.href = urlFromIndex(selectedIndex + 1);
       } else if (key === 'n') {
-        firework.launch('Already at last snapshot', 'success', 1500);
+        firework.launch('Already at latest snapshot', 'success', 1500);
       }
     });
   });
