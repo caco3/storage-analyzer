@@ -38,6 +38,11 @@ jobs:
           echo "REPO_NAME=${GITHUB_REPOSITORY##*/}" >> "$GITHUB_OUTPUT"
           echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
+      # Set Version
+      - name: Set Version
+        run: |
+          sed -i "s/#VERSION#/${{ steps.meta.outputs.SHORT_SHA }}/g" app/show-help.cgi
+
       # Login to Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -45,7 +50,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USER }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Build and push prod image
+      # Build and push image
       - name: Build and push production image
         uses: docker/build-push-action@v6
         with:
