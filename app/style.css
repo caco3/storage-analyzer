@@ -1,7 +1,7 @@
 /* From DUC */
 body { font-family: "arial", "sans-serif"; font-size: 11px; }
 table, thead, tbody, tr, td, th { font-size: inherit; font-family: inherit; }
-#main { display:table-cell; }
+#main {  margin: 0; padding: 0}
 #index { border-bottom: solid 1px #777777; }
 #index table td { padding-left: 5px; }
 #graph { float: left; }
@@ -73,19 +73,31 @@ ul {
   border-right: 1px solid;
 }
 
-#content_header_div {
+#newline {
+  padding-top: 0;
+  margin: 0;
+  float: left;
 }
 
-.content_header {
+#content2
+ {
+  float: left;
+  padding-top: 0;
+  margin: 0;
+}
+
+#content_header_div {
+  padding-top: 0;
+  margin: 0;
+}
+
+#content_header {
+  padding-bottom: 0;
   margin-bottom: 0;
 }
 
-#content {
-  
-}
-
 #error {
-  margin-top: 100px;
+  
 }
 
 .error {
@@ -94,7 +106,7 @@ ul {
 
 .error_message {
   padding: 5px;
-  background-color: white;
+ /* background-color: white;*/
 }
 
 #db_error, #path_error {
@@ -116,4 +128,12 @@ hr {
   margin: 10px 0;
 }
 
+#main_sidebar {
+  margin: 0;
+  padding: 0;
+  display: none;
+}
 
+#path {
+  margin-left: 8px;
+}

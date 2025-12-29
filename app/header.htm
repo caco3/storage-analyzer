@@ -6,7 +6,12 @@
 
     $(document).ready(function() {
       console.log("ready");
-      
+
+      /* Show main_sidebar only if duc.cgi is in the URL */
+      if ((location.href.indexOf("duc.cgi") !== -1) || (location.href.indexOf("error.cgi") !== -1)) {
+        document.getElementById("main_sidebar").style.display = "inline";
+      }
+
       /* Fetch list of databases and fill them into the list */
       $.ajax("get-databases.cgi", {
         success: function (data) {
@@ -79,7 +84,7 @@
           for (let i = 2; i < folders.length; i++) {
             f += folders[i] + "/";
             console.log("Folder: " + f.slice(0, -1));
-            txt += "<span class=\"not_selected_snapshot\"><a href='" + url_from_path(db, "/scan/" + f.slice(0, -1)) + "'>" + folders[i] + "</a></span> &gt; ";
+            txt += "<span class=\"not_selected_snapshot\"><a class=\"snapshot_link\" href='" + url_from_path(db, "/scan/" + f.slice(0, -1)) + "'>" + folders[i] + "</a></span> &gt; ";
           }
           p.innerHTML = txt;
         },
@@ -136,11 +141,15 @@
         <li class="nav-li"><span class="not_selected_snapshot"><a class="snapshot_link " href="show-help.cgi">Help</a></span></li>
       </ul>
 
-      <h3 style="margin-top: 5px; margin-bottom: 0; margin-left: 10px;">Keyboard shortcuts</h3>
-      <p style="margin-top: 5px; margin-bottom: 0; margin-left: 10px;"><strong>n</strong>: next snapshot<br><strong>p</strong>: previous snapshot</p>
+      <div id="main_sidebar">
+        <h3 style="margin-top: 5px; margin-bottom: 0; margin-left: 10px;">Keyboard shortcuts</h3>
+        <p style="margin-top: 5px; margin-bottom: 0; margin-left: 10px;"><strong>n</strong>: next snapshot<br><strong>p</strong>: previous snapshot</p>
 
-      <h2 style="margin-top: 10px; margin-bottom: 0; margin-left: 10px;">Snapshots</h2>
-      <div id=databases><ul id="databases_list" style="margin:0"></ul></div>  
-    </div>
-  <div id=content_header_div style="width: 80%"><h2 id=content_header>Snapshot</h2></div>
-  <div id=content style="float: left;">
+        <h2 style="margin-top: 10px; margin-bottom: 0; margin-left: 10px;">Snapshots</h2>
+        <div id=databases><ul id="databases_list" style="margin:0"></ul></div>
+      </div>
+  </div>
+  <div id=content2 >
+    <div id=content_header_div style="width: 80%"><h2 id=content_header>Snapshot</h2></div>
+    <div id=content style="float: left;">
+  </div>
