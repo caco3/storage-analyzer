@@ -3,8 +3,8 @@
 set -euo pipefail
 
 
-DATABASE_FOLDER="database"
-DATABASE_FOLDER_TEMP="database/temp"
+DATABASE_FOLDER="/database"
+DATABASE_FOLDER_TEMP="/database/temp"
 DATABASE_FILE="duc_"`date +"%Y-%m-%d_%H-%M-%S".db`
 
 
