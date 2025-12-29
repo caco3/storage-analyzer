@@ -1,14 +1,15 @@
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script type="text/javascript">
     var snapshots = [];
-    var path = "";
-    var selected_db_index;
+    var db = null;
+    var path = null;
+    var selected_db_index = 0;
 
     $(document).ready(function() {
       console.log("ready");
 
       /* Show main_sidebar only if duc.cgi is in the URL */
-      if ((location.href.indexOf("duc.cgi") !== -1) || (location.href.indexOf("error.cgi") !== -1)) {
+      if ((location.href.indexOf("duc.cgi") !== -1) || (location.href.indexOf("error.cgi") !== -1) || (location.href.indexOf("") !== -1)) {
         document.getElementById("main_sidebar").style.display = "inline";
       }
 
@@ -22,32 +23,31 @@
           data.databases.pop()
     
           /* Extract the parameters from the URL */
-          var db = (new URL(location.href)).searchParams.get('db')
+          db = (new URL(location.href)).searchParams.get('db')
           if (db == null) {
             console.log("No 'db' parameter in URL, selecting latest DB");
             db = data.databases[data.databases.length - 1]
           }
-          db = db.split("?")[0].replace("/database/duc_", "").replace(".db", "")
           console.log("Selected DB: " + db)
-          
+
           path = (new URL(location.href)).searchParams.get('path')
-          path = path.split("?")[0]
-          console.log("Path: " + path)
-          
           if (path == null) {
+            console.log("No 'path' parameter in URL, selecting '/scan'");
             path = "/scan"
           }
+          //path = path.split("?")[0]
+          console.log("Path: " + path)
 
           /* Iterate through the list */
           for(let i = 0; i < data.databases.length; i++) {
             let selected = false;
-            db_tmp = data.databases[i]["name"].replace("/database/duc_", "").replace(".db", "")
+            db_tmp = data.databases[i]["name"]
             if (db_tmp == db) { // Selected snapshot
               selected = true;
               selected_db_index = i;
             }
 
-            db_tmp = db_tmp.replace("_", " ").split(" ")
+            db_tmp = db_tmp.replace("/database/duc_", "").replace(".db", "").replace("_", " ").split(" ")
             db_name = db_tmp[0] + "_" + db_tmp[1].replaceAll(":", "-")
             title = db_tmp[0] + " " + db_tmp[1].split("_")[0].replaceAll("-", ":")
             snapshots.push({"db": db_name, "title": title, "selected": selected, "size": data.databases[i]["size"]});
@@ -57,12 +57,13 @@
 
           /* Format the list */
           list = document.getElementById("databases_list")
+          console.log(snapshots.length + " snapshots available");
           for(let i = 0; i < snapshots.length; i++) {
             let li = document.createElement('li');
             
             let entry_class = "not_selected_snapshot"
             let a_class = ""
-            if (snapshots[i].db == db) { // Selected snapshot
+            if (snapshots[i].selected == true) { // Selected snapshot
                 entry_class = "selected_snapshot"
                 a_class = "selected_snapshot_link"
             }                  
@@ -75,7 +76,8 @@
           
           /* Convert path to URL */
           p = document.getElementById("path");
-          p.innerHTML = url_from_snapshot_index(selected_db_index);
+          console.log("selected_db_index: " + selected_db_index);
+          p.innerHTML = url_from_snapshot_index(selected_db_index); // Select latest snapshot
 
           console.log("Path: " + path);
           folders = path.split("/")
@@ -119,6 +121,10 @@
 
 
     function url_from_snapshot_index(index) {
+      if (index < 0 || index >= snapshots.length) {
+        console.log("Index out of bounds: " + index);
+        return "#";
+      }
       return "duc.cgi?cmd=index&db=/database/duc_" + snapshots[index].db + ".db&path=" + path;
     }
 

@@ -19,4 +19,4 @@ for f in `ls -c1 $DB_FOLDER/duc_*.db.zst | sort`; do
     f=${f%.zst}
     echo "{\"name\": \"$f\", \"size\": $size},"
 done
-echo "0 ]}"
+echo "null ]}"
