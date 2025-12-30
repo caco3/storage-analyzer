@@ -35,7 +35,7 @@ IFS=',' read -r -a parts <<<"$paths_raw"
 out=""
 count=0
 for p in "${parts[@]}"; do
-  p=$(echo "$p" | sed 's/^ *//; s/ *$//')
+  p="/scan"$(echo "$p" | sed 's/^ *//; s/ *$//')
   [[ -z "$p" ]] && continue
 
   if [[ "$p" == "/scan" ]]; then

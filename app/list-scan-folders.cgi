@@ -3,8 +3,8 @@
 set -euo pipefail
 
 SCAN_ROOT=/scan
-MAX_DEPTH=3
-MAX_FOLDERS=2000
+MAX_DEPTH=2
+MAX_FOLDERS=500
 
 EXCLUDE_FILE=/config/exclude
 EXCLUDE_RAW=${EXCLUDE:-}
