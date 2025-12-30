@@ -211,6 +211,18 @@ ul {
   margin: 0;
 }
 
+/* Sidebar snapshot items: make every entry the same width */
+#databases_list .not_selected_snapshot,
+#databases_list .selected_snapshot {
+  display: block;
+  width: 100%;
+}
+
+#databases_list .snapshot_link {
+  display: block;
+  width: 100%;
+}
+
 /* Path Breadcrumb */
 #path {
   margin: 10px 0;
