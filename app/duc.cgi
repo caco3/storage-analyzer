@@ -71,7 +71,7 @@ if [[ "${DB:-}" == "" ]]; then
 </head>
 <body>
 EOF
-    cat header.htm | sed 's/Snapshot/No snapshots found/'
+    cat header.htm | sed 's/>Snapshot</>No snapshots found</'
     cat <<EOF
       <div class="info-box">
         <h2>No snapshots available</h2>
@@ -108,7 +108,7 @@ if [[ ! -f "$DB.zst" ]]; then
 </head>
 <body>
 EOF
-    cat header.htm | sed 's/Snapshot/Snapshot error/'
+    cat header.htm | sed 's/>Snapshot</>Snapshot error</'
     cat <<EOF
       <div class="error_message">
         <h2 class="error">Snapshot file missing</h2>

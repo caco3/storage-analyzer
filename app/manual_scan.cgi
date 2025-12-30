@@ -18,7 +18,7 @@ cat <<EOF
  <body>
 EOF
 
-cat header.htm | sed 's/Snapshot/Manual Scan/'
+cat header.htm | sed 's/>Snapshot</>Manual Scan</'
 
 if [ -d "$LOCK_DIR" ]; then
     echo "A scan is already in progress:"; echo

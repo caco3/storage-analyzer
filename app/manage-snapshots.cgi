@@ -14,7 +14,7 @@ cat <<EOF
 <body>
 EOF
 
-cat header.htm | sed 's/Snapshot/Manage Snapshots/'
+cat header.htm | sed 's/>Snapshot</>Manage Snapshots</'
 
 cat <<'EOF'
 <style>
