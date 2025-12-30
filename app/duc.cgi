@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-DB_FOLDER="/database"
+DB_FOLDER="/snapshots"
 
 set -eo pipefail
 

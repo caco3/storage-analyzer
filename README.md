@@ -34,8 +34,8 @@ This compose file also mounts a persistent volume to `/config` so settings (e.g.
 docker run \
     -p 80:80 \
     --mount type=bind,src=/,dst=/scan/root,readonly \
-    --mount type=volume,src=duc_database,dst=/database \
-    --mount type=volume,src=duc_config,dst=/config \
+    --mount type=volume,src=snapshots,dst=/snapshots \
+    --mount type=volume,src=config,dst=/config \
     caco3x/storage-analyzer
 ```
 
@@ -52,7 +52,7 @@ docker run \
 
 ## Developing
 ```bash
-sudo docker run -it -p 8080:80 --mount type=bind,src=$PWD/..,dst=/scan/temp,readonly -v $PWD/duc_database:/database -v $PWD/app:/var/www/html --name storage-analyzer $(docker build -q .)
+sudo docker run -it -p 8080:80 --mount type=bind,src=$PWD/..,dst=/scan/temp,readonly -v $PWD/snapshots:/snapshots -v $PWD/app:/var/www/html --name storage-analyzer $(docker build -q .)
 sudo docker stop storage-analyzer; sudo docker rm storage-analyzer
 ```
 

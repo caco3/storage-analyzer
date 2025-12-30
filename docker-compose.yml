@@ -17,11 +17,11 @@ services:
         source: /
         target: /scan/root
         read_only: true
-      # example: store the database outside the container
+      # persist configuration
       - type: volume
-        source: duc_database
-        target: /database
-      # persist configuration such as scan schedule
-      - type: volume
-        source: duc_config
+        source: config
         target: /config
+      # Persist databases outside the container
+      - type: volume
+        source: snapshots
+        target: /snapshots

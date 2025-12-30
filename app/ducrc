@@ -2,7 +2,7 @@
 
 [global]
 
-database /database/duc.db
+database /snapshots/duc.db
 
 [cgi]
 

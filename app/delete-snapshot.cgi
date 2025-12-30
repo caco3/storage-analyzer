@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-DB_FOLDER="/database"
+DB_FOLDER="/snapshots"
 
 echo "Content-type: application/json"
 echo ""
