@@ -194,6 +194,8 @@ ul {
   margin-top: 20px;
   padding-top: 15px;
   border-top: 1px solid rgba(0, 0, 0, 0.1);
+  position: relative;
+  height: calc(100vh - 250px);
 }
 
 #main_sidebar h2,
@@ -209,7 +211,11 @@ ul {
 }
 
 #snapshots {
-  max-height: 400px;
+  position: absolute;
+  top: 170px;
+  bottom: 15px;
+  left: 15px;
+  right: 15px;
   overflow-y: auto;
 }
 
