@@ -59,14 +59,14 @@
 
   function renderBreadcrumb() {
     var folders = path.split('/');
-    var crumbs = '<span class="not_selected_snapshot"><a class="snapshot_link" href="' + 
-                 urlFromPath(db, '/scan') + '">/</a></span>';
+    var crumbs = '<a class="not_selected_snapshot snapshot_link" href="' + 
+                 urlFromPath(db, '/scan') + '">/</a>';
     var f = '';
     
     for (var i = 2; i < folders.length; i++) {
       f += folders[i] + '/';
-      crumbs += ' <span class="breadcrumb-sep">›</span> <span class="not_selected_snapshot"><a class="snapshot_link" href="' + 
-                urlFromPath(db, '/scan/' + f.slice(0, -1)) + '">' + folders[i] + '</a></span>';
+      crumbs += ' <span class="breadcrumb-sep">›</span> <a class="not_selected_snapshot snapshot_link" href="' + 
+                urlFromPath(db, '/scan/' + f.slice(0, -1)) + '">' + folders[i] + '</a>';
     }
     
     $('#path').html(crumbs);
