@@ -209,6 +209,17 @@ cat <<'EOF'
   </div>
 </div>
 
+<div class="actions-section">
+  <h3 style="margin-top: 0;">Exclude Patterns</h3>
+  <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+    <input id="exclude-input" type="text" style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; min-width: 320px;" placeholder="proc sys dev run tmp">
+    <button class="btn btn-primary" onclick="confirmSaveExclude()">Save Exclude</button>
+  </div>
+  <div style="margin-top: 6px; color: #555; font-size: 12px;">
+    Space- or comma-separated patterns (passed to duc as <code>--exclude</code>).
+  </div>
+</div>
+
 <h3>Available Snapshots</h3>
 <table class="snapshot-table" id="snapshots-table">
   <thead>
@@ -232,6 +243,7 @@ cat <<'EOF'
     loadSnapshots();
     loadSchedule();
     bindScheduleUI();
+    loadExclude();
   });
 
   function loadSnapshots() {
@@ -496,6 +508,53 @@ cat <<'EOF'
       },
       error: function(xhr, status, error) {
         firework.launch('Failed to update schedule: ' + error, 'danger', 4000);
+      }
+    });
+  }
+
+  function loadExclude() {
+    $.ajax({
+      url: "get-exclude.cgi",
+      method: "GET",
+      success: function(resp) {
+        if (resp && resp.success) {
+          $('#exclude-input').val(resp.exclude || '');
+        } else {
+          firework.launch('Failed to load exclude patterns', 'warning', 3000);
+        }
+      },
+      error: function(xhr, status, error) {
+        firework.launch('Failed to load exclude patterns: ' + error, 'warning', 3000);
+      }
+    });
+  }
+
+  function confirmSaveExclude() {
+    var exclude = ($('#exclude-input').val() || '').trim();
+    showModal(
+      'Update Exclude Patterns',
+      'Save exclude patterns "' + exclude + '"? This affects scheduled and manual scans.',
+      'primary',
+      saveExclude,
+      exclude
+    );
+  }
+
+  function saveExclude(exclude) {
+    $.ajax({
+      url: "set-exclude.cgi",
+      method: "POST",
+      data: { exclude: exclude },
+      success: function(resp) {
+        if (resp && resp.success) {
+          firework.launch('Exclude patterns updated', 'success', 2500);
+          $('#exclude-input').val(resp.exclude || exclude);
+        } else {
+          firework.launch('Failed to update exclude patterns: ' + (resp && resp.error ? resp.error : 'unknown error'), 'danger', 4000);
+        }
+      },
+      error: function(xhr, status, error) {
+        firework.launch('Failed to update exclude patterns: ' + error, 'danger', 4000);
       }
     });
   }

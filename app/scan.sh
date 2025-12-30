@@ -12,7 +12,15 @@ DATABASE_FILE="duc_"`date +"%Y-%m-%d_%H-%M-%S".db`
 LOG_FILE="${DUC_LOG_FILE:-/var/log/duc.log}"
 LOCK_DIR="/tmp/scan.lock"
 
-EXCLUDE_RAW="${EXCLUDE:-}"
+mkdir -p /config
+
+EXCLUDE_RAW=""
+if [[ -f /config/exclude ]]; then
+    EXCLUDE_RAW=$(cat /config/exclude 2>/dev/null | tr -d '\r\n' || true)
+else
+    EXCLUDE_RAW="${EXCLUDE:-}"
+fi
+
 echo "Excluding files/folders with the following patterns: ${EXCLUDE_RAW}"
 EXCLUDE_RAW=$(echo "$EXCLUDE_RAW" | sed "s/,/ /g")
 EXCLUDE=( $(for a in ${EXCLUDE_RAW}; do echo -n "--exclude $a "; done) )
