@@ -1,0 +1,708 @@
+<style>
+  .snapshot-table {
+    border-collapse: collapse;
+    margin: 20px 0;
+    min-width: 500px;
+  }
+  .snapshot-table th, .snapshot-table td {
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    text-align: left;
+  }
+  .snapshot-table th {
+    background: #f5f5f5;
+  }
+  .snapshot-table tr:hover {
+    background: #f9f9f9;
+  }
+  .btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin: 2px;
+  }
+  .btn-danger {
+    background: #E65A27;
+    color: white;
+  }
+  .btn-danger:hover {
+    background: #c44a1f;
+  }
+  .btn-primary {
+    background: #669936;
+    color: white;
+  }
+  .btn-primary:hover {
+    background: #557a2d;
+  }
+  .actions-section {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f5f5f5;
+    border-radius: 6px;
+  }
+
+  /* Custom Modal Dialog */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+  }
+  .modal-overlay.active {
+    display: flex;
+  }
+  .modal-dialog {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    max-width: 400px;
+    width: 90%;
+    animation: modalSlideIn 0.2s ease-out;
+  }
+  @keyframes modalSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .modal-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-header h3 {
+    margin: 0;
+    font-size: 18px;
+  }
+  .modal-header.danger h3 {
+    color: #E65A27;
+  }
+  .modal-header.primary h3 {
+    color: #669936;
+  }
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #999;
+    line-height: 1;
+  }
+  .modal-close:hover {
+    color: #333;
+  }
+  .modal-body {
+    padding: 20px;
+    color: #555;
+    line-height: 1.5;
+  }
+  .modal-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #eee;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  .btn-secondary {
+    background: #6c757d;
+    color: white;
+  }
+  .btn-secondary:hover {
+    background: #5a6268;
+  }
+</style>
+
+<!-- Custom Modal Dialog -->
+<div id="modal-overlay" class="modal-overlay">
+  <div class="modal-dialog">
+    <div class="modal-header" id="modal-header">
+      <h3 id="modal-title">Confirm</h3>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p id="modal-message"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn" id="modal-confirm-btn" onclick="modalConfirm()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Scan Folder Selection Dialog -->
+<div id="folder-overlay" class="modal-overlay">
+  <div class="modal-dialog" style="max-width: 520px;">
+    <div class="modal-header primary">
+      <h3>Select scan folders</h3>
+      <button class="modal-close" onclick="closeFolderDialog()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom: 10px; color: #555; font-size: 13px;">
+        Select one or more folder to include in the next scan.
+      </div>
+      <div style="display:flex; gap: 10px; align-items:center; margin-bottom: 10px;">
+        <input id="folder-filter" type="text" placeholder="Filter folders..." style="flex:1; padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px;">
+        <button class="btn btn-secondary" onclick="clearFolderFilter()">Clear</button>
+      </div>
+      <div id="folder-list" style="max-height: 260px; overflow: auto; border: 1px solid #eee; border-radius: 6px; padding: 10px;"></div>
+      <div style="margin-top: 10px; color: #555; font-size: 12px;">
+        If no folder is selected, all folders are scanned.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeFolderDialog()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveFolderSelection()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="actions-section">
+  <h3 style="margin-top: 0;">Actions</h3>
+  <button class="btn btn-primary" onclick="confirmScan()">Start New Scan</button>
+</div>
+
+<div class="actions-section">
+  <h3 style="margin-top: 0;">Schedule</h3>
+  <div id="schedule-unsupported" style="display:none; margin-bottom: 10px; color: #a25b00; font-size: 12px;">
+    Current schedule is not in a supported format. Choose a new schedule below to overwrite it.
+  </div>
+  <div style="display: grid; grid-template-columns: 160px 1fr; gap: 10px 12px; align-items: center; max-width: 520px;">
+    <label for="schedule-mode" style="font-size: 13px; color: #333;">Frequency</label>
+    <select id="schedule-mode" style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px;">
+      <option value="hourly">Hourly</option>
+      <option value="daily">Daily</option>
+      <option value="weekly">Weekly</option>
+      <option value="monthly">Monthly</option>
+    </select>
+
+    <label for="schedule-minute" style="font-size: 13px; color: #333;">Minute</label>
+    <input id="schedule-minute" type="number" min="0" max="59" value="0" style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px;">
+
+    <label for="schedule-hour" style="font-size: 13px; color: #333;">Hour</label>
+    <input id="schedule-hour" type="number" min="0" max="23" value="0" style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px;">
+
+    <label for="schedule-dow" style="font-size: 13px; color: #333;">Day of week</label>
+    <select id="schedule-dow" style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px;">
+      <option value="0">Sunday</option>
+      <option value="1">Monday</option>
+      <option value="2">Tuesday</option>
+      <option value="3">Wednesday</option>
+      <option value="4">Thursday</option>
+      <option value="5">Friday</option>
+      <option value="6">Saturday</option>
+    </select>
+
+    <label for="schedule-dom" style="font-size: 13px; color: #333;">Day of month</label>
+    <input id="schedule-dom" type="number" min="1" max="31" value="1" style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px;">
+  </div>
+
+  <div style="margin-top: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+    <button class="btn btn-primary" onclick="confirmSaveSchedule()">Save Schedule</button>
+    <span id="schedule-preview" style="color: #555; font-size: 12px;"></span>
+  </div>
+</div>
+
+<div class="actions-section">
+  <h3 style="margin-top: 0;">Exclude Patterns</h3>
+  <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+    <input id="exclude-input" type="text" style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; min-width: 320px;" placeholder="proc sys dev run tmp">
+    <button class="btn btn-primary" onclick="confirmSaveExclude()">Save Exclude</button>
+  </div>
+  <div style="margin-top: 6px; color: #555; font-size: 12px;">
+    Space- or comma-separated patterns (passed to duc as <code>--exclude</code>).
+  </div>
+</div>
+
+<div class="actions-section">
+  <h3 style="margin-top: 0;">Scan Folders</h3>
+  <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+    <button class="btn btn-primary" onclick="openFolderDialog()">Select folders</button>
+    <span id="scanpaths-summary" style="color: #555; font-size: 12px;"></span>
+  </div>
+</div>
+
+<h3>Available Snapshots</h3>
+<table class="snapshot-table" id="snapshots-table">
+  <thead>
+    <tr>
+      <th>Snapshot</th>
+      <th>Used Storage</th>
+      <th>Snapshot Size</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody id="snapshots-body">
+    <tr><td colspan="4">Loading...</td></tr>
+  </tbody>
+</table>
+
+<script src="jquery.min.js"></script>
+<link type="text/css" rel="stylesheet" href="jquery.firework.css">
+<script type="text/javascript" src="jquery.firework.js"></script>
+<script>
+  $(document).ready(function() {
+    loadSnapshots();
+    loadSchedule();
+    bindScheduleUI();
+    loadExclude();
+    loadScanPaths();
+  });
+
+  function loadSnapshots() {
+    $.ajax("get-snapshots.cgi", {
+      success: function(data) {
+        if (Array.isArray(data.snapshots) && data.snapshots.length > 0 && data.snapshots[data.snapshots.length - 1] === null) {
+          data.snapshots.pop(); // Remove trailing null
+        }
+        
+        var tbody = $("#snapshots-body");
+        tbody.empty();
+        
+        if (data.snapshots.length === 0) {
+          tbody.append('<tr><td colspan="4">No snapshots available</td></tr>');
+          return;
+        }
+        
+        for (var i = data.snapshots.length - 1; i >= 0; i--) {
+          var db = data.snapshots[i];
+          var name = db.name.replace("/snapshots/duc_", "").replace(".db", "");
+          var displayName = name.replace("_", " ").split(" ");
+          var title = displayName[0] + " " + displayName[1].split("_")[0].replaceAll("-", ":");
+          
+          var sizeText = formatSize(db.size);
+          var dbSizeText = formatSize(db['db-size']);
+          
+          var row = '<tr>' +
+            '<td>' + title + '</td>' +
+            '<td>' + sizeText + '</td>' +
+            '<td>' + dbSizeText + '</td>' +
+            '<td><button class="btn btn-danger" onclick="confirmDelete(\'' + db.name + '\', \'' + title + '\')">Delete</button></td>' +
+            '</tr>';
+          tbody.append(row);
+        }
+      },
+      error: function(xhr, status, error) {
+        $("#snapshots-body").html('<tr><td colspan="4">Error loading snapshots: ' + error + '</td></tr>');
+        firework.launch('Failed to load snapshots', 'danger', 3000);
+      }
+    });
+  }
+
+  function formatSize(bytes) {
+    if (bytes > 1024*1024*1024) {
+      return (Math.round(bytes * 10 / 1024 / 1024 / 1024) / 10) + ' GB';
+    } else if (bytes > 1024*1024) {
+      return (Math.round(bytes * 10 / 1024 / 1024) / 10) + ' MB';
+    } else if (bytes > 1024) {
+      return (Math.round(bytes * 10 / 1024) / 10) + ' KB';
+    } else if (bytes > 0) {
+      return bytes + ' B';
+    }
+    return 'Unknown';
+  }
+
+  var pendingAction = null;
+  var pendingData = null;
+
+  function showModal(title, message, type, onConfirm, data) {
+    pendingAction = onConfirm;
+    pendingData = data;
+    $('#modal-title').text(title);
+    $('#modal-message').text(message);
+    $('#modal-header').removeClass('danger primary').addClass(type);
+    $('#modal-confirm-btn').removeClass('btn-danger btn-primary').addClass(type === 'danger' ? 'btn-danger' : 'btn-primary');
+    $('#modal-overlay').addClass('active');
+  }
+
+  function closeModal() {
+    $('#modal-overlay').removeClass('active');
+    pendingAction = null;
+    pendingData = null;
+  }
+
+  function modalConfirm() {
+    if (pendingAction) {
+      pendingAction(pendingData);
+    }
+    closeModal();
+  }
+
+  function confirmDelete(dbPath, title) {
+    showModal(
+      'Delete Snapshot',
+      'Are you sure you want to delete the snapshot "' + title + '"? This action cannot be undone.',
+      'danger',
+      deleteSnapshot,
+      dbPath
+    );
+  }
+
+  function deleteSnapshot(dbPath) {
+    $.ajax({
+      url: "delete-snapshot.cgi",
+      method: "POST",
+      data: { db: dbPath },
+      success: function(response) {
+        if (response.success) {
+          firework.launch('Snapshot deleted successfully', 'success', 2000);
+          loadSnapshots();
+        } else {
+          firework.launch('Failed to delete: ' + response.error, 'danger', 4000);
+        }
+      },
+      error: function(xhr, status, error) {
+        firework.launch('Failed to delete snapshot: ' + error, 'danger', 4000);
+      }
+    });
+  }
+
+  function confirmScan() {
+    showModal(
+      'Start New Scan',
+      'Are you sure you want to start a new scan? This may take a while depending on the size of your storage.',
+      'primary',
+      startScan,
+      null
+    );
+  }
+
+  function startScan() {
+    $.ajax({
+      url: "trigger-scan.cgi",
+      method: "POST",
+      success: function(response) {
+        if (response.success) {
+          firework.launch(response.message, 'success', 3000);
+        } else {
+          firework.launch(response.message, 'warning', 3000);
+        }
+      },
+      error: function(xhr, status, error) {
+        firework.launch('Failed to trigger scan: ' + error, 'danger', 4000);
+      }
+    });
+  }
+
+  function loadSchedule() {
+    $.ajax({
+      url: "get-schedule.cgi",
+      method: "GET",
+      success: function(resp) {
+        if (resp && resp.success) {
+          if (resp.supported) {
+            $('#schedule-unsupported').hide();
+            $('#schedule-mode').val(resp.mode);
+            $('#schedule-minute').val(resp.minute);
+            $('#schedule-hour').val(resp.hour);
+            $('#schedule-dow').val(resp.dow);
+            $('#schedule-dom').val(resp.dom);
+          } else {
+            $('#schedule-unsupported').show();
+          }
+          updateScheduleFieldsVisibility();
+          updateSchedulePreview();
+        } else {
+          firework.launch('Failed to load schedule', 'warning', 3000);
+        }
+      },
+      error: function(xhr, status, error) {
+        firework.launch('Failed to load schedule: ' + error, 'warning', 3000);
+      }
+    });
+  }
+
+  function bindScheduleUI() {
+    $('#schedule-mode').on('change', function() {
+      updateScheduleFieldsVisibility();
+      updateSchedulePreview();
+    });
+    $('#schedule-minute, #schedule-hour, #schedule-dom').on('input', updateSchedulePreview);
+    $('#schedule-dow').on('change', updateSchedulePreview);
+    updateScheduleFieldsVisibility();
+    updateSchedulePreview();
+  }
+
+  function updateScheduleFieldsVisibility() {
+    var mode = $('#schedule-mode').val();
+    var showHour = (mode === 'daily' || mode === 'weekly' || mode === 'monthly');
+    var showDow = (mode === 'weekly');
+    var showDom = (mode === 'monthly');
+
+    $('#schedule-hour').prop('disabled', !showHour);
+    $('#schedule-dow').prop('disabled', !showDow);
+    $('#schedule-dom').prop('disabled', !showDom);
+  }
+
+  function updateSchedulePreview() {
+    var mode = $('#schedule-mode').val();
+    var minute = parseInt($('#schedule-minute').val() || '0', 10);
+    var hour = parseInt($('#schedule-hour').val() || '0', 10);
+    var dow = $('#schedule-dow').val();
+    var dom = parseInt($('#schedule-dom').val() || '1', 10);
+
+    var cron = '';
+    if (mode === 'hourly') {
+      cron = minute + ' * * * *';
+    } else if (mode === 'daily') {
+      cron = minute + ' ' + hour + ' * * *';
+    } else if (mode === 'weekly') {
+      cron = minute + ' ' + hour + ' * * ' + dow;
+    } else if (mode === 'monthly') {
+      cron = minute + ' ' + hour + ' ' + dom + ' * *';
+    }
+
+    $('#schedule-preview').text('Cron: ' + cron);
+  }
+
+  function confirmSaveSchedule() {
+    var mode = $('#schedule-mode').val();
+    var minute = parseInt($('#schedule-minute').val() || '0', 10);
+    var hour = parseInt($('#schedule-hour').val() || '0', 10);
+    var dow = parseInt($('#schedule-dow').val() || '1', 10);
+    var dom = parseInt($('#schedule-dom').val() || '1', 10);
+
+    if (isNaN(minute) || minute < 0 || minute > 59) {
+      firework.launch('Minute must be between 0 and 59', 'warning', 2500);
+      return;
+    }
+    if ((mode === 'daily' || mode === 'weekly' || mode === 'monthly') && (isNaN(hour) || hour < 0 || hour > 23)) {
+      firework.launch('Hour must be between 0 and 23', 'warning', 2500);
+      return;
+    }
+    if (mode === 'weekly' && (isNaN(dow) || dow < 0 || dow > 6)) {
+      firework.launch('Day of week must be between 0 and 6', 'warning', 2500);
+      return;
+    }
+    if (mode === 'monthly' && (isNaN(dom) || dom < 1 || dom > 31)) {
+      firework.launch('Day of month must be between 1 and 31', 'warning', 2500);
+      return;
+    }
+
+    var preview = $('#schedule-preview').text().replace('Cron: ', '');
+    showModal(
+      'Update Schedule',
+      'Save the new schedule "' + preview + '"? This controls when automatic scans run.',
+      'primary',
+      saveSchedule,
+      { mode: mode, minute: minute, hour: hour, dow: dow, dom: dom, preview: preview }
+    );
+  }
+
+  function saveSchedule(payload) {
+    $.ajax({
+      url: "set-schedule.cgi",
+      method: "POST",
+      data: {
+        mode: payload.mode,
+        minute: payload.minute,
+        hour: payload.hour,
+        dow: payload.dow,
+        dom: payload.dom
+      },
+      success: function(resp) {
+        if (resp && resp.success) {
+          firework.launch('Schedule updated', 'success', 2500);
+          $('#schedule-unsupported').hide();
+          $('#schedule-preview').text('Cron: ' + (resp.schedule || payload.preview));
+        } else {
+          firework.launch('Failed to update schedule: ' + (resp && resp.error ? resp.error : 'unknown error'), 'danger', 4000);
+        }
+      },
+      error: function(xhr, status, error) {
+        firework.launch('Failed to update schedule: ' + error, 'danger', 4000);
+      }
+    });
+  }
+
+  function loadExclude() {
+    $.ajax({
+      url: "get-exclude.cgi",
+      method: "GET",
+      success: function(resp) {
+        if (resp && resp.success) {
+          $('#exclude-input').val(resp.exclude || '');
+        } else {
+          firework.launch('Failed to load exclude patterns', 'warning', 3000);
+        }
+      },
+      error: function(xhr, status, error) {
+        firework.launch('Failed to load exclude patterns: ' + error, 'warning', 3000);
+      }
+    });
+  }
+
+  function confirmSaveExclude() {
+    var exclude = ($('#exclude-input').val() || '').trim();
+    showModal(
+      'Update Exclude Patterns',
+      'Save exclude patterns "' + exclude + '"? This affects scheduled and manual scans.',
+      'primary',
+      saveExclude,
+      exclude
+    );
+  }
+
+  function saveExclude(exclude) {
+    $.ajax({
+      url: "set-exclude.cgi",
+      method: "POST",
+      data: { exclude: exclude },
+      success: function(resp) {
+        if (resp && resp.success) {
+          firework.launch('Exclude patterns updated', 'success', 2500);
+          $('#exclude-input').val(resp.exclude || exclude);
+        } else {
+          firework.launch('Failed to update exclude patterns: ' + (resp && resp.error ? resp.error : 'unknown error'), 'danger', 4000);
+        }
+      },
+      error: function(xhr, status, error) {
+        firework.launch('Failed to update exclude patterns: ' + error, 'danger', 4000);
+      }
+    });
+  }
+
+  var availableScanFolders = [];
+  var selectedScanPaths = [];
+  var folderFilter = '';
+
+  function loadScanPaths() {
+    $.ajax({
+      url: "get-scan-paths.cgi",
+      method: "GET",
+      success: function(resp) {
+        if (resp && resp.success) {
+          selectedScanPaths = resp.paths || [];
+          updateScanPathsSummary();
+        } else {
+          firework.launch('Failed to load scan paths', 'warning', 3000);
+        }
+      },
+      error: function(xhr, status, error) {
+        firework.launch('Failed to load scan paths: ' + error, 'warning', 3000);
+      }
+    });
+  }
+
+  function updateScanPathsSummary() {
+    if (!selectedScanPaths || selectedScanPaths.length === 0) {
+      $('#scanpaths-summary').text('/scan');
+      return;
+    }
+    $('#scanpaths-summary').text(selectedScanPaths.join(', '));
+  }
+
+  function openFolderDialog() {
+    firework.launch('Scanning folders, please wait...', 'success', 3000);
+    $.ajax({
+      url: "list-scan-folders.cgi",
+      method: "GET",
+      success: function(resp) {
+        if (resp && resp.success) {
+          availableScanFolders = resp.folders || [];
+          renderFolderDialog();
+          $('#folder-overlay').addClass('active');
+        } else {
+          firework.launch('Failed to list scan folders', 'warning', 3000);
+        }
+      },
+      error: function(xhr, status, error) {
+        firework.launch('Failed to list scan folders: ' + error, 'warning', 3000);
+      }
+    });
+  }
+
+  function closeFolderDialog() {
+    $('#folder-overlay').removeClass('active');
+  }
+
+  function clearFolderFilter() {
+    $('#folder-filter').val('');
+    folderFilter = '';
+    renderFolderDialog();
+  }
+
+  function renderFolderDialog() {
+    var list = $('#folder-list');
+    list.empty();
+
+    $('#folder-filter').off('input').on('input', function() {
+      folderFilter = ($(this).val() || '').toLowerCase();
+      renderFolderDialog();
+    });
+
+    if (!availableScanFolders || availableScanFolders.length === 0) {
+      list.html('<div style="color:#555; font-size: 13px;">No folders found under /scan.</div>');
+      return;
+    }
+
+    availableScanFolders.forEach(function(entry) {
+      var rel = entry.path;
+      var depth = entry.depth || 0;
+      //var abs = '/scan' + rel;
+      var abs = rel;
+
+      if (folderFilter) {
+        if (abs.toLowerCase().indexOf(folderFilter) === -1) {
+          return;
+        }
+      }
+
+      var checked = (selectedScanPaths || []).indexOf(abs) !== -1;
+      var item = $('<div style="margin: 6px 0;"></div>');
+      var pad = 8 + (Math.min(depth, 10) * 14);
+
+      item.html(
+        '<label style="display:flex; gap: 8px; align-items:center; cursor:pointer; padding-left:' + pad + 'px;">' +
+          '<input type="checkbox" class="scan-folder-cb" value="' + abs + '" ' + (checked ? 'checked' : '') + '>' +
+          '<span style="font-family: monospace; font-size: 13px;">' + abs + '</span>' +
+        '</label>'
+      );
+      list.append(item);
+    });
+  }
+
+  function saveFolderSelection() {
+    var paths = [];
+    $('#folder-list .scan-folder-cb:checked').each(function() {
+      paths.push($(this).val());
+    });
+
+    if (paths.length === 0) {
+      paths = ['/scan'];
+    }
+
+    $.ajax({
+      url: "set-scan-paths.cgi",
+      method: "POST",
+      data: { paths: paths.join(',') },
+      success: function(resp) {
+        if (resp && resp.success) {
+          selectedScanPaths = paths;
+          updateScanPathsSummary();
+          firework.launch('Scan folders updated', 'success', 2500);
+          closeFolderDialog();
+        } else {
+          firework.launch('Failed to update scan folders: ' + (resp && resp.error ? resp.error : 'unknown error'), 'danger', 4000);
+        }
+      },
+      error: function(xhr, status, error) {
+        firework.launch('Failed to update scan folders: ' + error, 'danger', 4000);
+      }
+    });
+  }
+</script>
