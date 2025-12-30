@@ -23,11 +23,12 @@ printf '{"success": true, "paths": ['
 while IFS= read -r line; do
   line=$(echo "$line" | tr -d '\r\n')
   [[ -z "$line" ]] && continue
+  encoded=$(python3 -c 'import sys, urllib.parse\nprint(urllib.parse.quote(sys.argv[1], safe="/"))' "$line")
   if [[ "$first" == true ]]; then
     first=false
   else
     printf ','
   fi
-  printf '"%s"' "$line"
+  printf '"%s"' "$encoded"
 done <<<"$paths"
 printf ']}'

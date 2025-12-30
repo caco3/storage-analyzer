@@ -587,7 +587,13 @@
       method: "GET",
       success: function(resp) {
         if (resp && resp.success) {
-          selectedScanPaths = resp.paths || [];
+          selectedScanPaths = (resp.paths || []).map(function(p) {
+            try {
+              return decodeURIComponent(p);
+            } catch (e) {
+              return p;
+            }
+          });
           updateScanPathsSummary();
         } else {
           firework.launch('Failed to load scan paths', 'warning', 3000);
@@ -700,6 +706,11 @@
       var abs = rel;
       var displayAbs = rel;
 
+      // Skip subfolders if their parent is already selected
+      if (hasSelectedAncestor(abs, folderDialogExplicit)) {
+        return;
+      }
+
       if (folderFilter) {
         if (displayAbs.toLowerCase().indexOf(folderFilter) === -1) {
           return;
@@ -728,6 +739,16 @@
       var p = cb.val();
       if (cb.prop('checked')) {
         folderDialogExplicit.add(p);
+        // Remove any subfolders that are explicitly selected when parent is selected
+        var toRemove = [];
+        folderDialogExplicit.forEach(function(path) {
+          if (path !== p && path.indexOf(p + '/') === 0) {
+            toRemove.push(path);
+          }
+        });
+        toRemove.forEach(function(path) {
+          folderDialogExplicit.delete(path);
+        });
       } else {
         folderDialogExplicit.delete(p);
       }
@@ -736,23 +757,30 @@
   }
 
   function saveFolderSelection() {
-    var selection = computeFolderDialogSelection(folderDialogExplicit);
-    var paths = Array.from(selection);
+    // Only send explicitly selected folders, not the disabled subfolders
+    var paths = Array.from(folderDialogExplicit);
 
     if (paths.length === 0) {
       paths = ['/'];
     }
 
+    // Ensure paths are properly formatted
     var absolutePaths = paths.map(function(p) {
       if (p === '/' || p === '') return '/scan';
-      return '/scan' + p;
+      // Ensure path starts with a single slash
+      return '/scan' + (p.startsWith('/') ? '' : '/') + p;
     });
 
+    // Prepare the request data
+    var requestData = { paths: paths };
+    
+    // Send the request
     $.ajax({
       url: "set-scan-paths.cgi",
       method: "POST",
-      contentType: 'application/json',
-      data: JSON.stringify({ paths: paths }),
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      data: JSON.stringify(requestData),
       success: function(resp) {
         if (resp && resp.success) {
           selectedScanPaths = absolutePaths;
