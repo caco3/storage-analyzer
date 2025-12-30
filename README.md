@@ -27,12 +27,15 @@ Run it with
 docker compose up --build --detach
 ```
 
+This compose file also mounts a persistent volume to `/config` so settings (e.g. the scan schedule configured in the management page) survive container rebuild/removal.
+
 ### Without Docker Compose
 ```
 docker run -e "SCHEDULE=0 0 * * *" -e "RUN_SCAN_ON_STARTUP=false" \
     -e "EXCLUDE=proc sys dev run tmp usr proc" -p 80:80 \
     --mount type=bind,src=/,dst=/scan/root,readonly \
     --mount type=volume,src=duc_database,dst=/database \
+    --mount type=volume,src=duc_config,dst=/config \
     caco3x/storage-analyzer
 ```
 
@@ -47,6 +50,9 @@ docker run -e "SCHEDULE=0 0 * * *" -e "RUN_SCAN_ON_STARTUP=false" \
    Folder/file patterns to be excluded (comma separated list without double quotes).
 
    Example: `proc sys dev run tmp temp usr proc`
+
+ - ### /config (volume)
+   Persisted configuration directory. Mount this path to keep settings (e.g. scan schedule) across container rebuild/removal.
 
 ## Web Endpoints
 - `/duc.cgi` provides a web gui to explore the disk usage

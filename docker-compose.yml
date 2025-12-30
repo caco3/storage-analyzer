@@ -1,5 +1,6 @@
 volumes:
     duc_database:
+    duc_config:
 
 services:
   duc-service:
@@ -27,3 +28,7 @@ services:
       - type: volume
         source: duc_database
         target: /database
+      # persist configuration such as scan schedule
+      - type: volume
+        source: duc_config
+        target: /config

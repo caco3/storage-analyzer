@@ -65,7 +65,7 @@ RUN dpkg -i /duc.deb \
         zstd \
  && rm -rf /var/lib/apt/lists/* \
  && rm -rf /var/www/html/* \
- && mkdir -p /database /scan
+ && mkdir -p /database /scan /config
 
 COPY app/nginx.conf /etc/nginx/nginx.conf
 COPY app/ducrc /etc/ducrc
@@ -81,8 +81,12 @@ COPY app/startup.sh /startup.sh
 COPY app/scan.sh /scan.sh
 COPY app/manual_scan.sh /manual_scan.sh
 
-# Default schedule: everyday at midnight
-ENV SCHEDULE="0 0 * * *"
+
+RUN chmod +x /var/www/html/*.cgi \
+ && chmod +x /startup.sh /scan.sh /manual_scan.sh
+
+# Default schedule: every sunday at midnight
+ENV SCHEDULE="0 0 * * 0"
 
 EXPOSE 80
 

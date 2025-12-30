@@ -168,6 +168,47 @@ cat <<'EOF'
   <button class="btn btn-primary" onclick="confirmScan()">Start New Scan</button>
 </div>
 
+<div class="actions-section">
+  <h3 style="margin-top: 0;">Schedule</h3>
+  <div id="schedule-unsupported" style="display:none; margin-bottom: 10px; color: #a25b00; font-size: 12px;">
+    Current schedule is not in a supported format. Choose a new schedule below to overwrite it.
+  </div>
+  <div style="display: grid; grid-template-columns: 160px 1fr; gap: 10px 12px; align-items: center; max-width: 520px;">
+    <label for="schedule-mode" style="font-size: 13px; color: #333;">Frequency</label>
+    <select id="schedule-mode" style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px;">
+      <option value="hourly">Hourly</option>
+      <option value="daily">Daily</option>
+      <option value="weekly">Weekly</option>
+      <option value="monthly">Monthly</option>
+    </select>
+
+    <label for="schedule-minute" style="font-size: 13px; color: #333;">Minute</label>
+    <input id="schedule-minute" type="number" min="0" max="59" value="0" style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px;">
+
+    <label for="schedule-hour" style="font-size: 13px; color: #333;">Hour</label>
+    <input id="schedule-hour" type="number" min="0" max="23" value="0" style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px;">
+
+    <label for="schedule-dow" style="font-size: 13px; color: #333;">Day of week</label>
+    <select id="schedule-dow" style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px;">
+      <option value="0">Sunday</option>
+      <option value="1">Monday</option>
+      <option value="2">Tuesday</option>
+      <option value="3">Wednesday</option>
+      <option value="4">Thursday</option>
+      <option value="5">Friday</option>
+      <option value="6">Saturday</option>
+    </select>
+
+    <label for="schedule-dom" style="font-size: 13px; color: #333;">Day of month</label>
+    <input id="schedule-dom" type="number" min="1" max="31" value="1" style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px;">
+  </div>
+
+  <div style="margin-top: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+    <button class="btn btn-primary" onclick="confirmSaveSchedule()">Save Schedule</button>
+    <span id="schedule-preview" style="color: #555; font-size: 12px;"></span>
+  </div>
+</div>
+
 <h3>Available Snapshots</h3>
 <table class="snapshot-table" id="snapshots-table">
   <thead>
@@ -189,6 +230,8 @@ cat <<'EOF'
 <script>
   $(document).ready(function() {
     loadSnapshots();
+    loadSchedule();
+    bindScheduleUI();
   });
 
   function loadSnapshots() {
@@ -322,6 +365,137 @@ cat <<'EOF'
       },
       error: function(xhr, status, error) {
         firework.launch('Failed to trigger scan: ' + error, 'danger', 4000);
+      }
+    });
+  }
+
+  function loadSchedule() {
+    $.ajax({
+      url: "get-schedule.cgi",
+      method: "GET",
+      success: function(resp) {
+        if (resp && resp.success) {
+          if (resp.supported) {
+            $('#schedule-unsupported').hide();
+            $('#schedule-mode').val(resp.mode);
+            $('#schedule-minute').val(resp.minute);
+            $('#schedule-hour').val(resp.hour);
+            $('#schedule-dow').val(resp.dow);
+            $('#schedule-dom').val(resp.dom);
+          } else {
+            $('#schedule-unsupported').show();
+          }
+          updateScheduleFieldsVisibility();
+          updateSchedulePreview();
+        } else {
+          firework.launch('Failed to load schedule', 'warning', 3000);
+        }
+      },
+      error: function(xhr, status, error) {
+        firework.launch('Failed to load schedule: ' + error, 'warning', 3000);
+      }
+    });
+  }
+
+  function bindScheduleUI() {
+    $('#schedule-mode').on('change', function() {
+      updateScheduleFieldsVisibility();
+      updateSchedulePreview();
+    });
+    $('#schedule-minute, #schedule-hour, #schedule-dom').on('input', updateSchedulePreview);
+    $('#schedule-dow').on('change', updateSchedulePreview);
+    updateScheduleFieldsVisibility();
+    updateSchedulePreview();
+  }
+
+  function updateScheduleFieldsVisibility() {
+    var mode = $('#schedule-mode').val();
+    var showHour = (mode === 'daily' || mode === 'weekly' || mode === 'monthly');
+    var showDow = (mode === 'weekly');
+    var showDom = (mode === 'monthly');
+
+    $('#schedule-hour').prop('disabled', !showHour);
+    $('#schedule-dow').prop('disabled', !showDow);
+    $('#schedule-dom').prop('disabled', !showDom);
+  }
+
+  function updateSchedulePreview() {
+    var mode = $('#schedule-mode').val();
+    var minute = parseInt($('#schedule-minute').val() || '0', 10);
+    var hour = parseInt($('#schedule-hour').val() || '0', 10);
+    var dow = $('#schedule-dow').val();
+    var dom = parseInt($('#schedule-dom').val() || '1', 10);
+
+    var cron = '';
+    if (mode === 'hourly') {
+      cron = minute + ' * * * *';
+    } else if (mode === 'daily') {
+      cron = minute + ' ' + hour + ' * * *';
+    } else if (mode === 'weekly') {
+      cron = minute + ' ' + hour + ' * * ' + dow;
+    } else if (mode === 'monthly') {
+      cron = minute + ' ' + hour + ' ' + dom + ' * *';
+    }
+
+    $('#schedule-preview').text('Cron: ' + cron);
+  }
+
+  function confirmSaveSchedule() {
+    var mode = $('#schedule-mode').val();
+    var minute = parseInt($('#schedule-minute').val() || '0', 10);
+    var hour = parseInt($('#schedule-hour').val() || '0', 10);
+    var dow = parseInt($('#schedule-dow').val() || '1', 10);
+    var dom = parseInt($('#schedule-dom').val() || '1', 10);
+
+    if (isNaN(minute) || minute < 0 || minute > 59) {
+      firework.launch('Minute must be between 0 and 59', 'warning', 2500);
+      return;
+    }
+    if ((mode === 'daily' || mode === 'weekly' || mode === 'monthly') && (isNaN(hour) || hour < 0 || hour > 23)) {
+      firework.launch('Hour must be between 0 and 23', 'warning', 2500);
+      return;
+    }
+    if (mode === 'weekly' && (isNaN(dow) || dow < 0 || dow > 6)) {
+      firework.launch('Day of week must be between 0 and 6', 'warning', 2500);
+      return;
+    }
+    if (mode === 'monthly' && (isNaN(dom) || dom < 1 || dom > 31)) {
+      firework.launch('Day of month must be between 1 and 31', 'warning', 2500);
+      return;
+    }
+
+    var preview = $('#schedule-preview').text().replace('Cron: ', '');
+    showModal(
+      'Update Schedule',
+      'Save the new schedule "' + preview + '"? This controls when automatic scans run.',
+      'primary',
+      saveSchedule,
+      { mode: mode, minute: minute, hour: hour, dow: dow, dom: dom, preview: preview }
+    );
+  }
+
+  function saveSchedule(payload) {
+    $.ajax({
+      url: "set-schedule.cgi",
+      method: "POST",
+      data: {
+        mode: payload.mode,
+        minute: payload.minute,
+        hour: payload.hour,
+        dow: payload.dow,
+        dom: payload.dom
+      },
+      success: function(resp) {
+        if (resp && resp.success) {
+          firework.launch('Schedule updated', 'success', 2500);
+          $('#schedule-unsupported').hide();
+          $('#schedule-preview').text('Cron: ' + (resp.schedule || payload.preview));
+        } else {
+          firework.launch('Failed to update schedule: ' + (resp && resp.error ? resp.error : 'unknown error'), 'danger', 4000);
+        }
+      },
+      error: function(xhr, status, error) {
+        firework.launch('Failed to update schedule: ' + error, 'danger', 4000);
       }
     });
   }

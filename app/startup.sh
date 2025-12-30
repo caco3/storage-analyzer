@@ -7,6 +7,16 @@ printenv > /etc/environment
 LOG_FILE="${DUC_LOG_FILE:-/var/log/duc.log}"
 touch "$LOG_FILE"
 
+mkdir -p /config
+
+if [[ -f /config/schedule ]]; then
+	PERSISTED_SCHEDULE=$(cat /config/schedule | tr -d '\r\n')
+	if [[ -n "${PERSISTED_SCHEDULE}" ]]; then
+		echo "Using persisted schedule from /config/schedule: ${PERSISTED_SCHEDULE}" | tee -a "$LOG_FILE"
+		SCHEDULE="${PERSISTED_SCHEDULE}"
+	fi
+fi
+
 if [[ "$RUN_SCAN_ON_STARTUP" == "true" ]]; then
 	echo "Starting initial recursive scan"
 	echo "This may take a while..."
