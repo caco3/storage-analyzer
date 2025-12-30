@@ -5,13 +5,6 @@ volumes:
 services:
   duc-service:
     build: .
-    environment:
-      # example: everyday at midnight
-      - SCHEDULE=0 0 * * *
-      # Set to true if a snapshot should be created on each docker container start
-      - RUN_SCAN_ON_STARTUP=false
-      # Folder/file patterns to be excluded (comma separated list without double quotes)
-      - EXCLUDE=proc sys dev run tmp temp usr proc
     ports:
       # example 80 -> 80
       - target: 80

@@ -31,7 +31,7 @@ This compose file also mounts a persistent volume to `/config` so settings (e.g.
 
 ### Without Docker Compose
 ```
-docker run -e "SCHEDULE=0 0 * * *" -e "RUN_SCAN_ON_STARTUP=false" \
+docker run \
     -p 80:80 \
     --mount type=bind,src=/,dst=/scan/root,readonly \
     --mount type=volume,src=duc_database,dst=/database \
@@ -43,9 +43,6 @@ docker run -e "SCHEDULE=0 0 * * *" -e "RUN_SCAN_ON_STARTUP=false" \
  - ### SCHEDULE
    A cron-expression that determines when an automatic scan is started.
 
- - ### RUN_SCAN_ON_STARTUP
-   Set to true if a snapshot should be created on each docker container start
-
  - ### /config (volume)
    Persisted configuration directory. Mount this path to keep settings across container rebuild/removal.
 
@@ -53,14 +50,9 @@ docker run -e "SCHEDULE=0 0 * * *" -e "RUN_SCAN_ON_STARTUP=false" \
    - `/config/schedule` (scan schedule)
    - `/config/exclude` (exclude patterns)
 
-## Web Endpoints
-- `/duc.cgi` provides a web gui to explore the disk usage
-- `/manual_scan.cgi` queues a manual scan
-- `/log.cgi` displays the log output from the last scan
-
 ## Developing
 ```bash
-sudo docker run -it -e "RUN_SCAN_ON_STARTUP=true" -p 8080:80 --mount type=bind,src=$PWD/..,dst=/scan/temp,readonly -v $PWD/duc_database:/database -v $PWD/app:/var/www/html --name storage-analyzer $(docker build -q .)
+sudo docker run -it -p 8080:80 --mount type=bind,src=$PWD/..,dst=/scan/temp,readonly -v $PWD/duc_database:/database -v $PWD/app:/var/www/html --name storage-analyzer $(docker build -q .)
 sudo docker stop storage-analyzer; sudo docker rm storage-analyzer
 ```
 
