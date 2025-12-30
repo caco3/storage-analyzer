@@ -40,7 +40,7 @@ get_PATH_IN_SNAPSHOT() {
 
 
 get_latest_db() {
-    # Scans the database folder and sets the variable $DB with the name of the latest database (based on date/time in filename)
+    # Scans the snapshot folder and sets the variable $DB with the name of the latest snapshot (based on date/time in filename)
     WD=`pwd`
     for f in `ls -c1 $DB_FOLDER/duc_*.db.zst | sort -r`; do
         DB="${f%.zst}"
@@ -75,7 +75,7 @@ EOF
     cat <<EOF
       <div class="info-box">
         <h2>No snapshots available</h2>
-        <p>No database snapshot exists yet. Start a scan to create your first snapshot.</p>
+        <p>No snapshot exists yet. Start a scan to create your first snapshot.</p>
         <p><a class="snapshot_link" href="manage-snapshots.cgi">Go to Manage</a></p>
       </div>
 EOF
@@ -95,7 +95,7 @@ if [[ "$PATH_IN_SNAPSHOT" == "" ]]; then
     exit 0
 fi
 
-# Decompress the database
+# Decompress the snapshot
 rm -f "$DB" 2>/dev/null || true
 if [[ ! -f "$DB.zst" ]]; then
     echo "Content-type: text/html"; echo

@@ -202,23 +202,23 @@ ul {
   color: #555;
 }
 
-#databases {
+#snapshots {
   max-height: 400px;
   overflow-y: auto;
 }
 
-#databases_list {
+#snapshots_list {
   margin: 0;
 }
 
 /* Sidebar snapshot items: make every entry the same width */
-#databases_list .not_selected_snapshot,
-#databases_list .selected_snapshot {
+#snapshots_list .not_selected_snapshot,
+#snapshots_list .selected_snapshot {
   display: block;
   width: 100%;
 }
 
-#databases_list .snapshot_link {
+#snapshots_list .snapshot_link {
   display: block;
   width: 100%;
 }

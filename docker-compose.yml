@@ -1,6 +1,6 @@
 volumes:
-    duc_database:
-    duc_config:
+    snapshots:
+    config:
 
 services:
   duc-service:
@@ -21,7 +21,7 @@ services:
       - type: volume
         source: config
         target: /config
-      # Persist databases outside the container
+      # Persist snapshots outside the container
       - type: volume
         source: snapshots
         target: /snapshots

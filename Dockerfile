@@ -65,7 +65,7 @@ RUN dpkg -i /duc.deb \
         zstd \
  && rm -rf /var/lib/apt/lists/* \
  && rm -rf /var/www/html/* \
- && mkdir -p /database /scan /config
+ && mkdir -p /snapshots /scan /config
 
 COPY app/nginx.conf /etc/nginx/nginx.conf
 COPY app/ducrc /etc/ducrc

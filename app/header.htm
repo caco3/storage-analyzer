@@ -25,7 +25,7 @@
       firework.launch('Invalid snapshot index', 'danger', 2000);
       index = snapshots.length - 1;
     }
-    return 'duc.cgi?cmd=index&db=/database/duc_' + snapshots[index].db + '.db&path=' + path;
+    return 'duc.cgi?cmd=index&db=/snapshots/duc_' + snapshots[index].db + '.db&path=' + path;
   }
 
   function urlFromPath(db, p) {
@@ -34,7 +34,7 @@
   }
 
   function parseDbName(name) {
-    var parts = name.replace('/database/duc_', '').replace('.db', '').replace('_', ' ').split(' ');
+    var parts = name.replace('/snapshots/duc_', '').replace('.db', '').replace('_', ' ').split(' ');
     return {
       db: parts[0] + '_' + parts[1].replaceAll(':', '-'),
       title: parts[0] + ' ' + parts[1].split('_')[0].replaceAll('-', ':')
@@ -42,7 +42,7 @@
   }
 
   function renderSnapshots() {
-    var list = $('#databases_list');
+    var list = $('#snapshots_list');
     list.empty();
 
     snapshots.forEach(function(snap, i) {
@@ -82,27 +82,27 @@
       $('#main_sidebar').show();
     }
 
-    $.ajax('get-databases.cgi', {
+    $.ajax('get-snapshots.cgi', {
       success: function(data) {
-        data.databases.pop();
+        data.snapshots.pop();
 
-        if (data.databases.length === 0) {
+        if (data.snapshots.length === 0) {
           snapshots = [];
           db = null;
           path = '/scan';
-          $('#databases_list').html('<li class="snapshot"><span class="not_selected_snapshot">No snapshots yet</span></li>');
+          $('#snapshots_list').html('<li class="snapshot"><span class="not_selected_snapshot">No snapshots yet</span></li>');
           $('#path').html('');
           return;
         }
         
         db = url.searchParams.get('db');
-        if (!db && data.databases.length > 0) {
-          db = data.databases[data.databases.length - 1]['db'];
+        if (!db && data.snapshots.length > 0) {
+          db = data.snapshots[data.snapshots.length - 1]['db'];
         }
 
         path = url.searchParams.get('path') || '/scan';
 
-        data.databases.forEach(function(item, i) {
+        data.snapshots.forEach(function(item, i) {
           var parsed = parseDbName(item.name);
           var isSelected = item.name === db;
           if (isSelected) selectedIndex = i;
@@ -122,7 +122,7 @@
       },
       error: function(xhr, status, error) {
         firework.launch('Failed to load snapshots: ' + error, 'danger', 5000);
-        $('#databases').html('<p class="error">Failed to load snapshots</p>');
+        $('#snapshots').html('<p class="error">Failed to load snapshots</p>');
       }
     });
 
@@ -171,8 +171,8 @@
     </div>
 
     <h3>Snapshots</h3>
-    <div id="databases">
-      <ul id="databases_list"></ul>
+    <div id="snapshots">
+      <ul id="snapshots_list"></ul>
     </div>
   </div>
 </div>

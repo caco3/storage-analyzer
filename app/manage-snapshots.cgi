@@ -163,6 +163,33 @@ cat <<'EOF'
   </div>
 </div>
 
+<!-- Scan Folder Selection Dialog -->
+<div id="folder-overlay" class="modal-overlay">
+  <div class="modal-dialog" style="max-width: 520px;">
+    <div class="modal-header primary">
+      <h3>Select scan folders</h3>
+      <button class="modal-close" onclick="closeFolderDialog()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom: 10px; color: #555; font-size: 13px;">
+        Select one or more folder to include in the next scan.
+      </div>
+      <div style="display:flex; gap: 10px; align-items:center; margin-bottom: 10px;">
+        <input id="folder-filter" type="text" placeholder="Filter folders..." style="flex:1; padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px;">
+        <button class="btn btn-secondary" onclick="clearFolderFilter()">Clear</button>
+      </div>
+      <div id="folder-list" style="max-height: 260px; overflow: auto; border: 1px solid #eee; border-radius: 6px; padding: 10px;"></div>
+      <div style="margin-top: 10px; color: #555; font-size: 12px;">
+        If no folder is selected, all folders are scanned.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeFolderDialog()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveFolderSelection()">Save</button>
+    </div>
+  </div>
+</div>
+
 <div class="actions-section">
   <h3 style="margin-top: 0;">Actions</h3>
   <button class="btn btn-primary" onclick="confirmScan()">Start New Scan</button>
@@ -220,6 +247,14 @@ cat <<'EOF'
   </div>
 </div>
 
+<div class="actions-section">
+  <h3 style="margin-top: 0;">Scan Folders</h3>
+  <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+    <button class="btn btn-primary" onclick="openFolderDialog()">Select folders</button>
+    <span id="scanpaths-summary" style="color: #555; font-size: 12px;"></span>
+  </div>
+</div>
+
 <h3>Available Snapshots</h3>
 <table class="snapshot-table" id="snapshots-table">
   <thead>
@@ -244,26 +279,27 @@ cat <<'EOF'
     loadSchedule();
     bindScheduleUI();
     loadExclude();
+    loadScanPaths();
   });
 
   function loadSnapshots() {
-    $.ajax("get-databases.cgi", {
+    $.ajax("get-snapshots.cgi", {
       success: function(data) {
-        if (Array.isArray(data.databases) && data.databases.length > 0 && data.databases[data.databases.length - 1] === null) {
-          data.databases.pop(); // Remove trailing null
+        if (Array.isArray(data.snapshots) && data.snapshots.length > 0 && data.snapshots[data.snapshots.length - 1] === null) {
+          data.snapshots.pop(); // Remove trailing null
         }
         
         var tbody = $("#snapshots-body");
         tbody.empty();
         
-        if (data.databases.length === 0) {
+        if (data.snapshots.length === 0) {
           tbody.append('<tr><td colspan="4">No snapshots available</td></tr>');
           return;
         }
         
-        for (var i = data.databases.length - 1; i >= 0; i--) {
-          var db = data.databases[i];
-          var name = db.name.replace("/database/duc_", "").replace(".db", "");
+        for (var i = data.snapshots.length - 1; i >= 0; i--) {
+          var db = data.snapshots[i];
+          var name = db.name.replace("/snapshots/duc_", "").replace(".db", "");
           var displayName = name.replace("_", " ").split(" ");
           var title = displayName[0] + " " + displayName[1].split("_")[0].replaceAll("-", ":");
           
@@ -555,6 +591,136 @@ cat <<'EOF'
       },
       error: function(xhr, status, error) {
         firework.launch('Failed to update exclude patterns: ' + error, 'danger', 4000);
+      }
+    });
+  }
+
+  var availableScanFolders = [];
+  var selectedScanPaths = [];
+  var folderFilter = '';
+
+  function loadScanPaths() {
+    $.ajax({
+      url: "get-scan-paths.cgi",
+      method: "GET",
+      success: function(resp) {
+        if (resp && resp.success) {
+          selectedScanPaths = resp.paths || [];
+          updateScanPathsSummary();
+        } else {
+          firework.launch('Failed to load scan paths', 'warning', 3000);
+        }
+      },
+      error: function(xhr, status, error) {
+        firework.launch('Failed to load scan paths: ' + error, 'warning', 3000);
+      }
+    });
+  }
+
+  function updateScanPathsSummary() {
+    if (!selectedScanPaths || selectedScanPaths.length === 0) {
+      $('#scanpaths-summary').text('/scan');
+      return;
+    }
+    $('#scanpaths-summary').text(selectedScanPaths.join(', '));
+  }
+
+  function openFolderDialog() {
+    firework.launch('Scanning folders, please wait...', 'success', 3000);
+    $.ajax({
+      url: "list-scan-folders.cgi",
+      method: "GET",
+      success: function(resp) {
+        if (resp && resp.success) {
+          availableScanFolders = resp.folders || [];
+          renderFolderDialog();
+          $('#folder-overlay').addClass('active');
+        } else {
+          firework.launch('Failed to list scan folders', 'warning', 3000);
+        }
+      },
+      error: function(xhr, status, error) {
+        firework.launch('Failed to list scan folders: ' + error, 'warning', 3000);
+      }
+    });
+  }
+
+  function closeFolderDialog() {
+    $('#folder-overlay').removeClass('active');
+  }
+
+  function clearFolderFilter() {
+    $('#folder-filter').val('');
+    folderFilter = '';
+    renderFolderDialog();
+  }
+
+  function renderFolderDialog() {
+    var list = $('#folder-list');
+    list.empty();
+
+    $('#folder-filter').off('input').on('input', function() {
+      folderFilter = ($(this).val() || '').toLowerCase();
+      renderFolderDialog();
+    });
+
+    if (!availableScanFolders || availableScanFolders.length === 0) {
+      list.html('<div style="color:#555; font-size: 13px;">No folders found under /scan.</div>');
+      return;
+    }
+
+    availableScanFolders.forEach(function(entry) {
+      var rel = entry.path;
+      var depth = entry.depth || 0;
+      //var abs = '/scan' + rel;
+      var abs = rel;
+
+      if (folderFilter) {
+        if (abs.toLowerCase().indexOf(folderFilter) === -1) {
+          return;
+        }
+      }
+
+      var checked = (selectedScanPaths || []).indexOf(abs) !== -1;
+      var item = $('<div style="margin: 6px 0;"></div>');
+      var pad = 8 + (Math.min(depth, 10) * 14);
+
+      item.html(
+        '<label style="display:flex; gap: 8px; align-items:center; cursor:pointer; padding-left:' + pad + 'px;">' +
+          '<input type="checkbox" class="scan-folder-cb" value="' + abs + '" ' + (checked ? 'checked' : '') + '>' +
+          '<span style="font-family: monospace; font-size: 13px;">' + abs + '</span>' +
+        '</label>'
+      );
+      list.append(item);
+    });
+  }
+
+  function saveFolderSelection() {
+    var paths = [];
+    $('#folder-list .scan-folder-cb:checked').each(function() {
+      paths.push($(this).val());
+    });
+
+    if (paths.length === 0) {
+      paths = ['/scan'];
+    }
+
+    $.ajax({
+      url: "set-scan-paths.cgi",
+      method: "POST",
+      data: { paths: paths.join(',') },
+      success: function(resp) {
+        if (resp && resp.success) {
+          selectedScanPaths = paths;
+          updateScanPathsSummary();
+          firework.launch('Scan folders updated', 'success', 2500);
+          closeFolderDialog();
+        } else {
+          firework.launch('Failed to update scan folders: ' + (resp && resp.error ? resp.error : 'unknown error'), 'danger', 4000);
+        }
+      },
+      error: function(xhr, status, error) {
+        firework.launch('Failed to update scan folders: ' + error, 'danger', 4000);
       }
     });
   }

@@ -15,13 +15,13 @@ DB_PATH=$(echo "$POST_DATA" | sed 's/.*db=\([^&]*\).*/\1/' | sed 's/%2F/\//g' | 
 
 # Validate the path
 if [[ -z "$DB_PATH" ]]; then
-    echo '{"success": false, "error": "No database specified"}'
+    echo '{"success": false, "error": "No snapshot specified"}'
     exit 0
 fi
 
 # Security: ensure path is within DB_FOLDER and is a .db file
 if [[ "$DB_PATH" != "$DB_FOLDER/duc_"* ]] || [[ "$DB_PATH" != *".db" ]]; then
-    echo '{"success": false, "error": "Invalid database path"}'
+    echo '{"success": false, "error": "Invalid snapshot path"}'
     exit 0
 fi
 

@@ -7,7 +7,7 @@ DB_FOLDER="/snapshots"
 echo "Content-type: application/json"
 echo ""
 
-echo "{"\"databases\"": ["
+echo "{"\"snapshots\"": ["
 for f in `ls -c1 $DB_FOLDER/duc_*.db.zst | sort`; do
     count=$(echo "$f" | tr -cd '_' | wc -c)
     if [ $count -eq 3 ]; then
