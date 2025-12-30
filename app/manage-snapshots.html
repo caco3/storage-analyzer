@@ -751,7 +751,8 @@
     $.ajax({
       url: "set-scan-paths.cgi",
       method: "POST",
-      data: { paths: paths.join(',') },
+      contentType: 'application/json',
+      data: JSON.stringify({ paths: paths }),
       success: function(resp) {
         if (resp && resp.success) {
           selectedScanPaths = absolutePaths;
