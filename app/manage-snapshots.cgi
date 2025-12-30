@@ -16,7 +16,7 @@ EOF
 
 cat header.htm | sed 's/>Snapshot</>Manage Snapshots</'
 
-cat manage-snapshots.html
+cat manage-snapshots.htm
 
 cat footer.htm
 echo "</body></html>"
