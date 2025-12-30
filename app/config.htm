@@ -16,54 +16,54 @@
   <div class="actions-section">
     <h1>Scan Folders</h1>
     <p>Select which folders to include in the storage analysis scan.</p>
-    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;">
+    <div class="config-controls">
       <button class="btn btn-primary" onclick="openFolderDialog()">Select folders</button>
-      <span id="scanpaths-summary" style="color: #555; font-size: 12px;"></span>
+      <span id="scanpaths-summary" class="config-summary"></span>
     </div>
-    <div style="color: #666; font-size: 12px;">
+    <div class="config-help">
       If no folder is selected, all folders under /scan will be included.
     </div>
   </div>
   
-  <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+  <hr class="section-separator">
   
   <!-- Exclude Patterns Section -->
   <div class="actions-section">
     <h1>Exclude Patterns</h1>
-    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-      <input id="exclude-input" type="text" style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px; min-width: 320px;" placeholder="proc sys dev run tmp">
+    <div class="config-controls-small">
+      <input id="exclude-input" type="text" class="config-input" placeholder="proc sys dev run tmp">
       <button class="btn btn-primary" onclick="confirmSaveExclude()">Save Exclude</button>
     </div>
-    <div style="margin-top: 6px; color: #555; font-size: 12px;">
+    <div class="config-help-top">
       Space- or comma-separated patterns (passed to duc as <code>--exclude</code>).
     </div>
   </div>
   
-  <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+  <hr class="section-separator">
   
   <!-- Schedule Section -->
   <div class="actions-section">
     <h1>Schedule</h1>
-    <div id="schedule-unsupported" style="display:none; margin-bottom: 10px; color: #a25b00; font-size: 12px;">
+    <div id="schedule-unsupported" class="config-warning">
       Current schedule is not in a supported format. Choose a new schedule below to overwrite it.
     </div>
-    <div style="display: grid; grid-template-columns: 160px 1fr; gap: 10px 12px; align-items: center; max-width: 520px;">
-      <label for="schedule-mode" style="font-size: 13px; color: #333;">Frequency</label>
-      <select id="schedule-mode" style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px;">
+    <div class="config-grid">
+      <label for="schedule-mode" class="config-label">Frequency</label>
+      <select id="schedule-mode" class="config-input-small">
         <option value="hourly">Hourly</option>
         <option value="daily">Daily</option>
         <option value="weekly">Weekly</option>
         <option value="monthly">Monthly</option>
       </select>
 
-      <label for="schedule-minute" style="font-size: 13px; color: #333;">Minute</label>
-      <input id="schedule-minute" type="number" min="0" max="59" value="0" style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px;">
+      <label for="schedule-minute" class="config-label">Minute</label>
+      <input id="schedule-minute" type="number" min="0" max="59" value="0" class="config-input-small">
 
-      <label for="schedule-hour" style="font-size: 13px; color: #333;">Hour</label>
-      <input id="schedule-hour" type="number" min="0" max="23" value="0" style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px;">
+      <label for="schedule-hour" class="config-label">Hour</label>
+      <input id="schedule-hour" type="number" min="0" max="23" value="0" class="config-input-small">
 
-      <label for="schedule-dow" style="font-size: 13px; color: #333;">Day of week</label>
-      <select id="schedule-dow" style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px;">
+      <label for="schedule-dow" class="config-label">Day of week</label>
+      <select id="schedule-dow" class="config-input-small">
         <option value="0">Sunday</option>
         <option value="1">Monday</option>
         <option value="2">Tuesday</option>
@@ -73,13 +73,13 @@
         <option value="6">Saturday</option>
       </select>
 
-      <label for="schedule-dom" style="font-size: 13px; color: #333;">Day of month</label>
-      <input id="schedule-dom" type="number" min="1" max="31" value="1" style="padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px;">
+      <label for="schedule-dom" class="config-label">Day of month</label>
+      <input id="schedule-dom" type="number" min="1" max="31" value="1" class="config-input-small">
     </div>
 
-    <div style="margin-top: 10px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+    <div class="config-footer">
       <button class="btn btn-primary" onclick="confirmSaveSchedule()">Save Schedule</button>
-      <span id="schedule-preview" style="color: #555; font-size: 12px;"></span>
+      <span id="schedule-preview" class="config-preview"></span>
     </div>
   </div>
   
@@ -88,26 +88,27 @@
 </div>
 
 <!-- Scan Folder Selection Dialog -->
-<div id="folder-overlay" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000;">
-  <div class="modal-dialog" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 20px; border-radius: 8px; max-width: 520px; width: 90%; max-height: 80vh; overflow: auto;">
-    <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-      <h3 style="margin: 0; color: #669936;">Select scan folders</h3>
-      <button class="btn btn-secondary" onclick="closeFolderDialog()" style="padding: 5px 10px;">&times;</button>
+<div id="folder-overlay" class="modal-overlay">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3>Select scan folders</h3>
+      <button class="btn btn-secondary modal-close-small" onclick="closeFolderDialog()">&times;</button>
     </div>
     <div class="modal-body">
-      <div style="margin-bottom: 10px; color: #555; font-size: 13px;">
+      <div class="modal-help-text">
         Select one or more folders to include in the next scan.
       </div>
-      <div style="display:flex; gap: 10px; align-items:center; margin-bottom: 10px;">
-        <input id="folder-filter" type="text" placeholder="Filter folders..." style="flex:1; padding: 8px 10px; border: 1px solid #ddd; border-radius: 4px;">
+      <div class="modal-filter-controls">
+        <input id="folder-filter" type="text" placeholder="Filter folders..." class="modal-filter-input">
         <button class="btn btn-secondary" onclick="clearFolderFilter()">Clear</button>
+        <button class="btn" id="modal-confirm-btn">Confirm</button>
       </div>
-      <div id="folder-list" style="max-height: 260px; overflow: auto; border: 1px solid #eee; border-radius: 6px; padding: 10px;"></div>
-      <div style="margin-top: 10px; color: #555; font-size: 12px;">
+      <div id="folder-list" class="modal-folder-list"></div>
+      <div class="modal-footer-help">
         If no folder is selected, all folders are scanned.
       </div>
     </div>
-    <div class="modal-footer" style="margin-top: 15px; text-align: right;">
+    <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeFolderDialog()">Cancel</button>
       <button class="btn btn-primary" onclick="saveFolderSelection()">Save</button>
     </div>
@@ -115,16 +116,16 @@
 </div>
 
 <!-- Custom Modal Dialog -->
-<div id="modal-overlay" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center;">
-  <div class="modal-dialog" style="background: white; border-radius: 8px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); max-width: 400px; width: 90%; animation: modalSlideIn 0.2s ease-out;">
-    <div class="modal-header" id="modal-header" style="padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
-      <h3 id="modal-title" style="margin: 0; font-size: 18px;">Confirm</h3>
-      <button class="modal-close" onclick="closeModal()" style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>
+<div id="modal-overlay" class="modal-overlay">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3 id="modal-title">Confirm</h3>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
     </div>
-    <div class="modal-body" style="padding: 20px; color: #555; line-height: 1.5;">
+    <div class="modal-body">
       <p id="modal-message"></p>
     </div>
-    <div class="modal-footer" style="padding: 15px 20px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px;">
+    <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
       <button class="btn" id="modal-confirm-btn" onclick="modalConfirm()">Confirm</button>
     </div>
@@ -151,13 +152,13 @@
     var statusClass = 'actions-section';
     if (type === 'success') {
       statusClass = 'actions-section';
-      $('#status-message').html('<div class="' + statusClass + '" style="background: #d4edda; color: #155724; border: 1px solid #c3e6cb;">' + message + '</div>');
+      $('#status-message').html('<div class="' + statusClass + ' status-success">' + message + '</div>');
     } else if (type === 'error') {
       statusClass = 'actions-section';
-      $('#status-message').html('<div class="' + statusClass + '" style="background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;">' + message + '</div>');
+      $('#status-message').html('<div class="' + statusClass + ' status-error">' + message + '</div>');
     } else if (type === 'warning') {
       statusClass = 'actions-section';
-      $('#status-message').html('<div class="' + statusClass + '" style="background: #fff3cd; color: #856404; border: 1px solid #ffeaa7;">' + message + '</div>');
+      $('#status-message').html('<div class="' + statusClass + ' status-warning">' + message + '</div>');
     }
     setTimeout(function() {
       $('#status-message').html('');
@@ -300,7 +301,7 @@
     });
 
     if (!availableScanFolders || availableScanFolders.length === 0) {
-      list.html('<div style="color:#555; font-size: 13px;">No folders found under /scan.</div>');
+      list.html('<div class="no-folders-text">No folders found under /scan.</div>');
       return;
     }
 
@@ -325,13 +326,13 @@
 
       var checked = selection.has(abs);
       var disabled = hasSelectedAncestor(abs, folderDialogExplicit);
-      var item = $('<div style="margin: 6px 0;"></div>');
+      var item = $('<div class="folder-item"></div>');
       var pad = 8 + (Math.min(depth, 10) * 14);
 
       item.html(
-        '<label style="display:flex; gap: 8px; align-items:center; cursor:pointer; padding-left:' + pad + 'px;">' +
+        '<label class="folder-label folder-label-padding" style="padding-left:' + (pad - 8) + 'px;">' +
           '<input type="checkbox" class="scan-folder-cb" value="' + abs + '" ' + (checked ? 'checked' : '') + ' ' + (disabled ? 'disabled' : '') + '>' +
-          '<span style="font-family: monospace; font-size: 13px;">' + displayAbs + '</span>' +
+          '<span class="folder-name">' + displayAbs + '</span>' +
         '</label>'
       );
       list.append(item);

@@ -119,20 +119,26 @@ a:hover {
 
 .nav-li {
   display: inline-block;
+  margin: 2px 0;
 }
 
 .nav-li .not_selected_snapshot {
-  display: inline-block;
+  display: block;
   padding: 8px 16px;
   background: #f5f5f5;
   border: 1px solid #ddd;
   border-radius: 4px;
+  cursor: pointer;
   transition: all 0.2s ease;
+  text-decoration: none;
+  color: #333;
+  font-size: 13px;
 }
 
 .nav-li .not_selected_snapshot:hover {
   background: #006680;
   border-color: #006680;
+  color: white;
 }
 
 .nav-li .not_selected_snapshot:hover .snapshot_link {
@@ -227,14 +233,42 @@ ul {
 #path {
   margin: 10px 0;
   padding: 10px 15px;
-  background: #f8f9fa;
-  border-radius: 4px;
+  background: #f5f5f5;
+  border-radius: 6px;
   font-size: 13px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
 }
 
 #path .not_selected_snapshot {
-  padding: 4px 8px;
-  font-size: 12px;
+  display: block;
+  padding: 8px 16px;
+  background: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  color: #333;
+  font-size: 13px;
+}
+
+#path .not_selected_snapshot:hover {
+  background: #006680;
+  border-color: #006680;
+  color: white;
+}
+
+#path .not_selected_snapshot:hover .snapshot_link {
+  color: white;
+}
+
+/* Breadcrumb separator */
+.breadcrumb-sep {
+  color: #666;
+  margin: 0 4px;
 }
 
 /* DUC Graph Styles */
@@ -302,7 +336,195 @@ hr {
   height: 1px;
   border: none;
   background: #ddd;
-  margin: 15px 0;
+}
+
+/* Section separators */
+.section-separator {
+  margin: 30px 0;
+  border: none;
+  height: 1px;
+  background: #ddd;
+}
+
+/* Config page specific styles */
+.config-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.config-controls-small {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.config-summary {
+  color: #555;
+  font-size: 12px;
+}
+
+.config-help {
+  color: #666;
+  font-size: 12px;
+}
+
+.config-help-top {
+  margin-top: 6px;
+  color: #555;
+  font-size: 12px;
+}
+
+.config-input {
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  min-width: 320px;
+}
+
+.config-input-small {
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.config-label {
+  font-size: 13px;
+  color: #333;
+}
+
+.config-grid {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 10px 12px;
+  align-items: center;
+  max-width: 520px;
+}
+
+.config-warning {
+  display: none;
+  margin-bottom: 10px;
+  color: #a25b00;
+  font-size: 12px;
+}
+
+.config-footer {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.config-preview {
+  color: #555;
+  font-size: 12px;
+}
+
+/* Modal specific styles */
+.modal-help-text {
+  margin-bottom: 10px;
+  color: #555;
+  font-size: 13px;
+}
+
+.modal-filter-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.modal-filter-input {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.modal-folder-list {
+  max-height: 260px;
+  overflow: auto;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  padding: 10px;
+}
+
+.modal-footer-help {
+  margin-top: 10px;
+  color: #555;
+  font-size: 12px;
+}
+
+.modal-close-small {
+  padding: 5px 10px;
+}
+
+/* Status messages */
+.status-success {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.status-error {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.status-warning {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.no-folders-text {
+  color: #555;
+  font-size: 13px;
+}
+
+.folder-item {
+  margin: 6px 0;
+}
+
+.folder-label {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.folder-name {
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.folder-label-padding {
+  padding-left: 8px;
+}
+
+/* Manage snapshots page styles */
+.page-title {
+  margin-top: 0;
+}
+
+/* Help page styles */
+.logo-align {
+  vertical-align: middle;
+}
+
+/* Log display styles */
+.log-display {
+  border: 1px solid black;
+  background: white;
+  padding: 10px;
+  font-family: monospace;
+  white-space: pre;
+  min-width: 500px;
 }
 
 /* Buttons */
