@@ -43,5 +43,5 @@ while ! [ -S /var/run/fcgiwrap.socket ]; do sleep .2; done
 chmod 777 /var/run/fcgiwrap.socket
 test -f nohup.out && rm -f ./nohup.out
 
-echo "You can access the service at http://localhost:80/"
+echo "You can access the service at http://localhost:80/ resp. at the exposed port"
 nginx
