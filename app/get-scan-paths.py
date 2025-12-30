@@ -20,14 +20,20 @@ if os.path.exists(persisted_file):
 
 # Default to /scan if no paths found
 if not paths:
-    paths = ["/scan"]
+    paths = ["/"]  # Single slash represents /scan
 
 # Check which paths exist and which don't
 valid_paths = []
 invalid_paths = []
 
 for path in paths:
-    if os.path.isdir(path):
+    # Convert relative path to absolute for checking existence
+    if path == "/":
+        abs_path = "/scan"
+    else:
+        abs_path = "/scan" + path  # path already starts with /
+    
+    if os.path.isdir(abs_path):
         valid_paths.append(path)
     else:
         invalid_paths.append(path)

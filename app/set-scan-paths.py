@@ -15,35 +15,36 @@ def urldecode_path(path):
     return urllib.parse.unquote(path)
 
 def normalize_path(path):
-    """Normalize client paths to be under SCAN_ROOT"""
+    """Normalize client paths to be relative to SCAN_ROOT with / prefix"""
     if path == '/' or path == '':
-        return SCAN_ROOT
+        return "/"  # Single slash represents /scan
     
-    # Remove leading slashes
-    path = '/' + path.lstrip('/')
+    # Remove /scan prefix if present
+    if path.startswith(SCAN_ROOT + '/'):
+        return path[len(SCAN_ROOT):]  # Remove /scan prefix, keep leading /
+    elif path == SCAN_ROOT:
+        return "/"
     
-    # If already under SCAN_ROOT, keep it
-    if path.startswith(SCAN_ROOT + '/') or path == SCAN_ROOT:
-        pass
-    else:
-        # Add SCAN_ROOT prefix
-        path = SCAN_ROOT + path
+    # Ensure path starts with /
+    if not path.startswith('/'):
+        path = '/' + path
     
-    # Remove trailing slash
-    return path.rstrip('/')
+    return path
 
 def validate_path(path):
     """Validate a path exists and is under SCAN_ROOT"""
+    # Convert relative path to absolute for validation
+    if path == "/":
+        abs_path = SCAN_ROOT
+    else:
+        abs_path = SCAN_ROOT + path  # path already starts with /
+    
     # Check for path traversal
     if '..' in path:
         return False, "Invalid path (contains '..')"
     
-    # Check if path is under SCAN_ROOT
-    if not path.startswith(SCAN_ROOT):
-        return False, "Invalid path (must be under /scan)"
-    
     # Check if path exists and is a directory
-    if not os.path.isdir(path):
+    if not os.path.isdir(abs_path):
         return False, "Path does not exist or is not a directory"
     
     return True, None

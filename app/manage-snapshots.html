@@ -626,10 +626,10 @@
   }
 
   function saveCleanedScanPaths(paths) {
-    // Convert to relative paths for saving
+    // Convert to relative paths for saving (remove /scan prefix)
     var relativePaths = paths.map(function(p) {
-      if (p === '/scan' || p === '/scan/') return '/';
-      if (p.indexOf('/scan/') === 0) return p.slice('/scan'.length);
+      if (p === '/scan' || p === '/scan/') return '';
+      if (p.startsWith('/scan/')) return p.substring(6); // Remove '/scan/' prefix
       return p;
     });
     
@@ -642,9 +642,9 @@
       data: JSON.stringify({ paths: relativePaths }),
       success: function(resp) {
         if (resp && resp.success) {
-          // Paths already updated, no need to do anything
+          // Paths saved successfully
         } else {
-          console.error('Failed to save cleaned scan paths');
+          console.error('Failed to save cleaned scan paths:', resp && resp.error ? resp.error : 'unknown error');
         }
       },
       error: function(xhr, status, error) {
