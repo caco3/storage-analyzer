@@ -12,10 +12,7 @@ echo ""
 read -r POST_DATA || true
 
 urldecode() {
-  echo "$1" \
-    | sed 's/+/ /g' \
-    | sed 's/%2F/\//g' \
-    | sed 's/%2C/,/g'
+  echo "$1" | perl -pe 's/%([0-9a-fA-F]{2})/chr(hex($1))/ge; s/\+/ /g'
 }
 
 val=$(echo "$POST_DATA" | sed -n 's/.*\bpaths=\([^&]*\).*/\1/p' | head -n 1)
@@ -51,7 +48,7 @@ for p in "${parts[@]}"; do
   fi
 
   if [[ ! -d "$p" ]]; then
-    echo '{"success": false, "error": "Path does not exist"}'
+    echo '{"success": false, "error": "Path does not exist: '$p'"}'
     exit 0
   fi
 

@@ -578,6 +578,7 @@
 
   var availableScanFolders = [];
   var selectedScanPaths = [];
+  var folderDialogExplicit = new Set();
   var folderFilter = '';
 
   function loadScanPaths() {
@@ -600,10 +601,15 @@
 
   function updateScanPathsSummary() {
     if (!selectedScanPaths || selectedScanPaths.length === 0) {
-      $('#scanpaths-summary').text('/scan');
+      $('#scanpaths-summary').text('/');
       return;
     }
-    $('#scanpaths-summary').text(selectedScanPaths.join(', '));
+    var display = selectedScanPaths.map(function(p) {
+      if (p === '/scan' || p === '/scan/') return '/';
+      if (p.indexOf('/scan/') === 0) return p.slice('/scan'.length);
+      return p;
+    });
+    $('#scanpaths-summary').text(display.join(', '));
   }
 
   function openFolderDialog() {
@@ -614,6 +620,15 @@
       success: function(resp) {
         if (resp && resp.success) {
           availableScanFolders = resp.folders || [];
+          folderDialogExplicit = new Set(
+            (selectedScanPaths || [])
+              .map(function(p) {
+                if (p === '/scan' || p === '/scan/') return '';
+                if (p.indexOf('/scan/') === 0) return p.slice('/scan'.length);
+                return p;
+              })
+              .filter(function(p) { return p !== ''; })
+          );
           renderFolderDialog();
           $('#folder-overlay').addClass('active');
         } else {
@@ -636,6 +651,33 @@
     renderFolderDialog();
   }
 
+  function hasSelectedAncestor(path, explicitSet) {
+    for (const a of explicitSet) {
+      if (a === path) {
+        continue;
+      }
+      if (path.indexOf(a + '/') === 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  function computeFolderDialogSelection(explicitSet) {
+    var selection = new Set(explicitSet);
+    (availableScanFolders || []).forEach(function(entry) {
+      var rel = entry.path;
+      var abs = rel;
+      for (const a of explicitSet) {
+        if (abs.indexOf(a + '/') === 0) {
+          selection.add(abs);
+          break;
+        }
+      }
+    });
+    return selection;
+  }
+
   function renderFolderDialog() {
     var list = $('#folder-list');
     list.empty();
@@ -650,41 +692,61 @@
       return;
     }
 
+    var selection = computeFolderDialogSelection(folderDialogExplicit);
+
     availableScanFolders.forEach(function(entry) {
       var rel = entry.path;
       var depth = entry.depth || 0;
-      //var abs = '/scan' + rel;
       var abs = rel;
+      var displayAbs = rel;
 
       if (folderFilter) {
-        if (abs.toLowerCase().indexOf(folderFilter) === -1) {
+        if (displayAbs.toLowerCase().indexOf(folderFilter) === -1) {
           return;
         }
       }
 
-      var checked = (selectedScanPaths || []).indexOf(abs) !== -1;
+      var checked = selection.has(abs);
+      var disabled = hasSelectedAncestor(abs, folderDialogExplicit);
       var item = $('<div style="margin: 6px 0;"></div>');
       var pad = 8 + (Math.min(depth, 10) * 14);
 
       item.html(
         '<label style="display:flex; gap: 8px; align-items:center; cursor:pointer; padding-left:' + pad + 'px;">' +
-          '<input type="checkbox" class="scan-folder-cb" value="' + abs + '" ' + (checked ? 'checked' : '') + '>' +
-          '<span style="font-family: monospace; font-size: 13px;">' + abs + '</span>' +
+          '<input type="checkbox" class="scan-folder-cb" value="' + abs + '" ' + (checked ? 'checked' : '') + ' ' + (disabled ? 'disabled' : '') + '>' +
+          '<span style="font-family: monospace; font-size: 13px;">' + displayAbs + '</span>' +
         '</label>'
       );
       list.append(item);
     });
+
+    $('#folder-list .scan-folder-cb').off('change').on('change', function() {
+      var cb = $(this);
+      if (cb.prop('disabled')) {
+        return;
+      }
+      var p = cb.val();
+      if (cb.prop('checked')) {
+        folderDialogExplicit.add(p);
+      } else {
+        folderDialogExplicit.delete(p);
+      }
+      renderFolderDialog();
+    });
   }
 
   function saveFolderSelection() {
-    var paths = [];
-    $('#folder-list .scan-folder-cb:checked').each(function() {
-      paths.push($(this).val());
-    });
+    var selection = computeFolderDialogSelection(folderDialogExplicit);
+    var paths = Array.from(selection);
 
     if (paths.length === 0) {
-      paths = ['/scan'];
+      paths = ['/'];
     }
+
+    var absolutePaths = paths.map(function(p) {
+      if (p === '/' || p === '') return '/scan';
+      return '/scan' + p;
+    });
 
     $.ajax({
       url: "set-scan-paths.cgi",
@@ -692,7 +754,7 @@
       data: { paths: paths.join(',') },
       success: function(resp) {
         if (resp && resp.success) {
-          selectedScanPaths = paths;
+          selectedScanPaths = absolutePaths;
           updateScanPathsSummary();
           firework.launch('Scan folders updated', 'success', 2500);
           closeFolderDialog();
