@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8">
   <title>DUC Configuration</title>
-  <meta charset="utf-8" />
   <link rel="stylesheet" type="text/css" href="style.css">
   <script src="jquery.min.js"></script>
   <link type="text/css" rel="stylesheet" href="jquery.firework.css">
@@ -10,9 +10,7 @@
 </head>
 <body>
 
-<div class="container">
-  
-  <!-- Scan Folders Section -->
+<!-- Scan Folders Section -->
   <div class="actions-section">
     <h1>Scan Folders</h1>
     <p>Select which folders to include in the storage analysis scan.</p>
@@ -35,7 +33,7 @@
       <button class="btn btn-primary" onclick="confirmSaveExclude()">Save Exclude</button>
     </div>
     <div class="config-help-top">
-      Space- or comma-separated patterns (passed to duc as <code>--exclude</code>).
+      Space- or comma-separated patterns.
     </div>
   </div>
   
@@ -43,7 +41,7 @@
   
   <!-- Schedule Section -->
   <div class="actions-section">
-    <h1>Schedule</h1>
+    <h1>Auto Scan Schedule</h1>
     <div id="schedule-unsupported" class="config-warning">
       Current schedule is not in a supported format. Choose a new schedule below to overwrite it.
     </div>
@@ -85,12 +83,13 @@
   
   <!-- Status Display -->
   <div id="status-message"></div>
-</div>
 
-<!-- Scan Folder Selection Dialog -->
-<div id="folder-overlay" class="modal-overlay">
-  <div class="modal-dialog">
-    <div class="modal-header">
+  <!-- Scan Folder Selection Dialog -->
+  <div id="folder-overlay" class="modal-overlay">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Select scan folders</h3>
+        <button class="btn btn-secondary modal-close-small" onclick="closeFolderDialog()">&times;</button>
       <h3>Select scan folders</h3>
       <button class="btn btn-secondary modal-close-small" onclick="closeFolderDialog()">&times;</button>
     </div>
