@@ -594,6 +594,26 @@
               return p;
             }
           });
+          
+          // Handle invalid paths
+          if (resp.invalid_paths && resp.invalid_paths.length > 0) {
+            var invalidPaths = resp.invalid_paths.map(function(p) {
+              try {
+                return decodeURIComponent(p);
+              } catch (e) {
+                return p;
+              }
+            });
+            
+            // Show warning about invalid paths
+            var message = 'The following scan paths no longer exist and have been removed:\n' + 
+                         invalidPaths.join('\n');
+            firework.launch(message, 'warning', 5000);
+            
+            // Save the cleaned list (only valid paths)
+            saveCleanedScanPaths(selectedScanPaths);
+          }
+          
           updateScanPathsSummary();
         } else {
           firework.launch('Failed to load scan paths', 'warning', 3000);
@@ -601,6 +621,34 @@
       },
       error: function(xhr, status, error) {
         firework.launch('Failed to load scan paths: ' + error, 'warning', 3000);
+      }
+    });
+  }
+
+  function saveCleanedScanPaths(paths) {
+    // Convert to relative paths for saving
+    var relativePaths = paths.map(function(p) {
+      if (p === '/scan' || p === '/scan/') return '/';
+      if (p.indexOf('/scan/') === 0) return p.slice('/scan'.length);
+      return p;
+    });
+    
+    // Save the cleaned paths
+    $.ajax({
+      url: "set-scan-paths.cgi",
+      method: "POST",
+      dataType: 'json',
+      contentType: 'application/json; charset=utf-8',
+      data: JSON.stringify({ paths: relativePaths }),
+      success: function(resp) {
+        if (resp && resp.success) {
+          // Paths already updated, no need to do anything
+        } else {
+          console.error('Failed to save cleaned scan paths');
+        }
+      },
+      error: function(xhr, status, error) {
+        console.error('Failed to save cleaned scan paths:', error);
       }
     });
   }
@@ -625,7 +673,12 @@
       method: "GET",
       success: function(resp) {
         if (resp && resp.success) {
-          availableScanFolders = resp.folders || [];
+          availableScanFolders = (resp.folders || []).map(function(folder) {
+            return {
+              path: decodeURIComponent(folder.path),
+              depth: folder.depth
+            };
+          });
           folderDialogExplicit = new Set(
             (selectedScanPaths || [])
               .map(function(p) {

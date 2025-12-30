@@ -2,33 +2,8 @@
 
 set -euo pipefail
 
-PERSISTED_SCAN_PATHS_FILE=/config/scan_paths
-
 echo "Content-type: application/json"
 echo ""
 
-mkdir -p /config
-
-paths=""
-if [[ -f "$PERSISTED_SCAN_PATHS_FILE" ]]; then
-  paths=$(cat "$PERSISTED_SCAN_PATHS_FILE" 2>/dev/null | tr -d '\r' || true)
-fi
-
-if [[ -z "$paths" ]]; then
-  paths="/scan"
-fi
-
-first=true
-printf '{"success": true, "paths": ['
-while IFS= read -r line; do
-  line=$(echo "$line" | tr -d '\r\n')
-  [[ -z "$line" ]] && continue
-  encoded=$(python3 -c 'import sys, urllib.parse\nprint(urllib.parse.quote(sys.argv[1], safe="/"))' "$line")
-  if [[ "$first" == true ]]; then
-    first=false
-  else
-    printf ','
-  fi
-  printf '"%s"' "$encoded"
-done <<<"$paths"
-printf ']}'
+# Call the Python script to handle the logic
+exec python3 "$(dirname "$0")/get-scan-paths.py"
