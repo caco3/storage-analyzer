@@ -382,6 +382,10 @@ hr {
   margin-left: auto;
 }
 
+.config-button-left {
+  order: -1;
+}
+
 .config-help {
   color: #666;
   font-size: 12px;
