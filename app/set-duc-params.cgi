@@ -5,6 +5,11 @@ set -euo pipefail
 # Read POST data
 read POST_DATA
 
+# Parse POST data
+ONE_FILE_SYSTEM=$(echo "$POST_DATA" | sed -n 's/.*one_file_system=\([^&]*\).*/\1/p' | sed 's/%20/ /g' | sed 's/+//g')
+CHECK_HARD_LINKS=$(echo "$POST_DATA" | sed -n 's/.*check_hard_links=\([^&]*\).*/\1/p' | sed 's/%20/ /g' | sed 's/+//g')
+MAX_DEPTH=$(echo "$POST_DATA" | sed -n 's/.*max_depth=\([^&]*\).*/\1/p' | sed 's/%20/ /g' | sed 's/+//g')
+
 echo "Content-type: application/json"
 echo ""
 
@@ -25,7 +30,7 @@ case "$MAX_DEPTH" in
 esac
 
 # Save to config file
-CONFIG_FILE="/app/duc-params.conf"
+CONFIG_FILE="/config/duc-params.conf"
 cat > "$CONFIG_FILE" << EOF
 ONE_FILE_SYSTEM=$ONE_FILE_SYSTEM
 CHECK_HARD_LINKS=$CHECK_HARD_LINKS

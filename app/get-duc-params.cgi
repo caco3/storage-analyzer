@@ -5,7 +5,7 @@ set -euo pipefail
 echo "Content-type: application/json"
 echo ""
 
-CONFIG_FILE="/app/duc-params.conf"
+CONFIG_FILE="/config/duc-params.conf"
 
 # Load from config file if it exists
 if [ -f "$CONFIG_FILE" ]; then
