@@ -70,6 +70,51 @@
   <!-- Status Display -->
   <div id="status-message"></div>
 
+<!-- Scan Folder Selection Dialog -->
+<div id="folder-overlay" class="modal-overlay">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3>Select scan folders</h3>
+      <button class="btn btn-secondary modal-close-small" onclick="closeFolderDialog()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-help-text">
+        Select one or more folders to include in the next scan.
+      </div>
+      <div class="modal-filter-controls">
+        <input id="folder-filter" type="text" placeholder="Filter folders..." class="modal-filter-input">
+        <button class="btn btn-secondary" onclick="clearFolderFilter()">Clear</button>
+        <button class="btn" id="modal-confirm-btn">Confirm</button>
+      </div>
+      <div id="folder-list" class="modal-folder-list"></div>
+      <div class="modal-footer-help">
+        If no folder is selected, all folders are scanned.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeFolderDialog()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveFolderSelection()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Custom Modal Dialog -->
+<div id="modal-overlay" class="modal-overlay">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3 id="modal-title">Confirm</h3>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p id="modal-message"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn" id="modal-confirm-btn" onclick="modalConfirm()">Confirm</button>
+    </div>
+  </div>
+</div>
+
 <script>
   var selectedScanPaths = [];
   var availableScanFolders = [];
