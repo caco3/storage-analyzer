@@ -75,7 +75,7 @@
   <div class="modal-dialog">
     <div class="modal-header">
       <h3>Select scan folders</h3>
-      <button class="btn btn-secondary modal-close-small" onclick="closeFolderDialog()">&times;</button>
+      <button class="modal-close" onclick="closeFolderDialog()">&times;</button>
     </div>
     <div class="modal-body">
       <div class="modal-help-text">
@@ -207,7 +207,7 @@
 
   function updateScanPathsSummary() {
     if (!selectedScanPaths || selectedScanPaths.length === 0) {
-      $('#scanpaths-summary').text('All folders');
+      $('#scanpaths-summary').html('All folders');
       return;
     }
     var display = selectedScanPaths.map(function(p) {
@@ -215,7 +215,10 @@
       if (p.indexOf('/scan/') === 0) return p.slice('/scan'.length);
       return p;
     });
-    $('#scanpaths-summary').text('Selected: ' + display.join(', '));
+    var bulletList = '<ul style="margin: 0; padding-left: 20px;">' + 
+      display.map(function(path) { return '<li>' + path + '</li>'; }).join('') + 
+      '</ul>';
+    $('#scanpaths-summary').html(bulletList);
   }
 
   function openFolderDialog() {
