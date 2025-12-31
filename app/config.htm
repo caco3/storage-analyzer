@@ -29,7 +29,7 @@
   
   <!-- Schedule Section -->
   <div class="actions-section">
-    <h1>Auto Scan Schedule</h1>
+    <h1>Scan Schedule</h1>
     <div id="schedule-unsupported" class="config-warning">
       Current schedule is not in a supported format. Choose a new schedule below to overwrite it.
     </div>
@@ -214,10 +214,10 @@
       if (p.indexOf('/scan/') === 0) return p.slice('/scan'.length);
       return p;
     });
-    var bulletList = '<ul style="margin: 0; padding-left: 20px;">' + 
-      display.map(function(path) { return '<li>' + path + '</li>'; }).join('') + 
+    var bulletList = '<ul style="margin: 5px 0; padding-left: 20px; list-style-type: disc;">' + 
+      display.map(function(path) { return '<li style="margin-bottom: 2px;">' + path + '</li>'; }).join('') + 
       '</ul>';
-    $('#scanpaths-summary').html(bulletList);
+    $('#scanpaths-summary').html("Selected folders:<br>" + bulletList);
   }
 
   function openFolderDialog() {
