@@ -12,6 +12,45 @@
   
   <hr class="section-separator">
   
+  <!-- DUC Parameters Section -->
+  <div class="actions-section">
+    <h1>DUC Parameters</h1>
+    <div class="config-grid">
+      <label for="one-file-system" class="config-label">One File System</label>
+      <select id="one-file-system" class="config-input-small">
+        <option value="no">No (cross filesystem boundaries)</option>
+        <option value="yes">Yes (stay on one filesystem)</option>
+      </select>
+
+      <label for="check-hard-links" class="config-label">Check Hard Links</label>
+      <select id="check-hard-links" class="config-input-small">
+        <option value="yes">Yes (count hard links once)</option>
+        <option value="no">No (count hard links separately)</option>
+      </select>
+
+      <label for="max-depth" class="config-label">Max Depth</label>
+      <select id="max-depth" class="config-input-small">
+        <option value="1">1 level</option>
+        <option value="2">2 levels</option>
+        <option value="3">3 levels</option>
+        <option value="4">4 levels</option>
+        <option value="5">5 levels</option>
+        <option value="6">6 levels</option>
+        <option value="7">7 levels</option>
+        <option value="8">8 levels</option>
+        <option value="9">9 levels</option>
+        <option value="10">10 levels</option>
+      </select>
+    </div>
+    <div class="config-controls">
+    <span class="config-summary"></span>
+    <p><br></p>
+    <button class="btn btn-primary config-button-right" onclick="confirmSaveDucParams()">Save DUC Parameters</button>
+  </div>
+  </div>
+  
+  <hr class="section-separator">
+  
   <!-- Schedule Section -->
   <div class="actions-section">
     <h1>Scan Schedule</h1>
@@ -86,6 +125,7 @@
   // Load configuration on page load
   $(document).ready(function() {
     loadExclude();
+    loadDucParams();
     loadSchedule();
     bindScheduleUI();
   });
@@ -153,6 +193,68 @@
       },
       error: function(xhr, status, error) {
         firework.launch('Failed to update exclude patterns: ' + error, 'danger', 3000);
+      }
+    });
+  }
+
+  // DUC Parameters Functions
+  function loadDucParams() {
+    $.ajax({
+      url: "get-duc-params.cgi",
+      method: "GET",
+      success: function(resp) {
+        if (resp && resp.success) {
+          $('#one-file-system').val(resp.one_file_system || 'no');
+          $('#check-hard-links').val(resp.check_hard_links || 'yes');
+          $('#max-depth').val(resp.max_depth || '5');
+        } else {
+          firework.launch('Failed to load DUC parameters', 'danger', 3000);
+        }
+      },
+      error: function(xhr, status, error) {
+        firework.launch('Failed to load DUC parameters: ' + error, 'danger', 3000);
+      }
+    });
+  }
+
+  function confirmSaveDucParams() {
+    var oneFileSystem = $('#one-file-system').val();
+    var checkHardLinks = $('#check-hard-links').val();
+    var maxDepth = $('#max-depth').val();
+    
+    var message = 'Save DUC parameters?<br><br>';
+    message += '<strong>One File System:</strong> ' + (oneFileSystem === 'yes' ? 'Yes (stay on one filesystem)' : 'No (cross filesystem boundaries)') + '<br>';
+    message += '<strong>Check Hard Links:</strong> ' + (checkHardLinks === 'yes' ? 'Yes (count hard links once)' : 'No (count hard links separately)') + '<br>';
+    message += '<strong>Max Depth:</strong> ' + maxDepth + ' levels<br><br>';
+    message += 'This affects how scans are performed.';
+    
+    showModal(
+      'Update DUC Parameters',
+      message,
+      'primary',
+      saveDucParams,
+      { one_file_system: oneFileSystem, check_hard_links: checkHardLinks, max_depth: maxDepth }
+    );
+  }
+
+  function saveDucParams(params) {
+    $.ajax({
+      url: "set-duc-params.cgi",
+      method: "POST",
+      data: {
+        one_file_system: params.one_file_system,
+        check_hard_links: params.check_hard_links,
+        max_depth: params.max_depth
+      },
+      success: function(resp) {
+        if (resp && resp.success) {
+          firework.launch('DUC parameters updated', 'success', 3000);
+        } else {
+          firework.launch('Failed to update DUC parameters: ' + (resp && resp.error ? resp.error : 'unknown error'), 'danger', 3000);
+        }
+      },
+      error: function(xhr, status, error) {
+        firework.launch('Failed to update DUC parameters: ' + error, 'danger', 3000);
       }
     });
   }

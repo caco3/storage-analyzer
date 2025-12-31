@@ -7,9 +7,9 @@ add date/time to logfile entries
 make log text smaller and use max width (viewport)
 
 add config options for
-- --one-file-system
-- --check-hard-links
-- --max-depth=VAL
+- --one-file-system yes/no
+- --check-hard-links yes/no
+- --max-depth=1..10
 
 
 folder selection disabled -> not solvable, remove again
