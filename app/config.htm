@@ -326,6 +326,7 @@
     }
 
     $('#schedule-preview').text('Cron: ' + cron);
+    $('#schedule-cron').text(cron);
     // Update button tooltip with current cron expression
     $('button[onclick="confirmSaveSchedule()"]').attr('title', 'Cron configuration: ' + cron);
   }
