@@ -9,15 +9,8 @@ echo ""
 read -r POST_DATA || true
 
 # Parse POST data
-ONE_FILE_SYSTEM=$(echo "$POST_DATA" | sed -n 's/.*one_file_system=\([^&]*\).*/\1/p' | sed 's/%20/ /g' | sed 's/+//g')
 CHECK_HARD_LINKS=$(echo "$POST_DATA" | sed -n 's/.*check_hard_links=\([^&]*\).*/\1/p' | sed 's/%20/ /g' | sed 's/+//g')
 MAX_DEPTH=$(echo "$POST_DATA" | sed -n 's/.*max_depth=\([^&]*\).*/\1/p' | sed 's/%20/ /g' | sed 's/+//g')
-
-# Validate inputs
-case "$ONE_FILE_SYSTEM" in
-    yes|no) ;;
-    *) echo '{"success": false, "error": "Invalid one_file_system value"}'; exit 1 ;;
-esac
 
 case "$CHECK_HARD_LINKS" in
     yes|no) ;;
@@ -33,20 +26,18 @@ esac
 CONFIG_FILE="/config/duc-params"
 mkdir -p /config
 cat > "$CONFIG_FILE" << EOF
-ONE_FILE_SYSTEM=$ONE_FILE_SYSTEM
 CHECK_HARD_LINKS=$CHECK_HARD_LINKS
 MAX_DEPTH=$MAX_DEPTH
 EOF
 
 # Log the change
 LOG_FILE="${DUC_LOG_FILE:-/var/log/duc.log}"
-echo "$(date): parameters updated: one-file-system=$ONE_FILE_SYSTEM, check-hard-links=$CHECK_HARD_LINKS, max-depth=$MAX_DEPTH" >> "$LOG_FILE"
+echo "$(date): parameters updated: check-hard-links=$CHECK_HARD_LINKS, max-depth=$MAX_DEPTH" >> "$LOG_FILE"
 
 # Output JSON response
 cat << EOF
 {
   "success": true,
-  "one_file_system": "$ONE_FILE_SYSTEM",
   "check_hard_links": "$CHECK_HARD_LINKS",
   "max_depth": "$MAX_DEPTH"
 }

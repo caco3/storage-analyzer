@@ -19,12 +19,6 @@
     See <a href="https://rawgit.com/zevv/duc/master/doc/duc.1.html">here</a> for more details.
     
     <div class="config-grid">
-      <label for="one-file-system" class="config-label">One File System</label>
-      <select id="one-file-system" class="config-input-small">
-        <option value="no">No (cross filesystem boundaries)</option>
-        <option value="yes">Yes (stay on one filesystem)</option>
-      </select>
-
       <label for="check-hard-links" class="config-label">Check Hard Links</label>
       <select id="check-hard-links" class="config-input-small">
         <option value="yes">Yes (count hard links once)</option>
@@ -207,36 +201,33 @@
       method: "GET",
       success: function(resp) {
         if (resp && resp.success) {
-          $('#one-file-system').val(resp.one_file_system || 'no');
           $('#check-hard-links').val(resp.check_hard_links || 'yes');
           $('#max-depth').val(resp.max_depth || '5');
         } else {
-          firework.launch('Failed to load parameters', 'danger', 3000);
+          firework.launch('Failed to load DUC parameters', 'danger', 3000);
         }
       },
       error: function(xhr, status, error) {
-        firework.launch('Failed to load parameters: ' + error, 'danger', 3000);
+        firework.launch('Failed to load DUC parameters: ' + error, 'danger', 3000);
       }
     });
   }
 
   function confirmSaveDucParams() {
-    var oneFileSystem = $('#one-file-system').val();
     var checkHardLinks = $('#check-hard-links').val();
     var maxDepth = $('#max-depth').val();
     
-    var message = 'Save parameters?<br><br>';
-    message += '<strong>One File System:</strong> ' + (oneFileSystem === 'yes' ? 'Yes (stay on one filesystem)' : 'No (cross filesystem boundaries)') + '<br>';
-    message += '<strong>Check Hard Links:</strong> ' + (checkHardLinks === 'yes' ? 'Yes (count hard links once)' : 'No (count hard links separately)') + '<br>';
-    message += '<strong>Max Depth:</strong> ' + maxDepth + ' levels<br><br>';
+    var message = 'Save DUC parameters?\n\n';
+    message += 'Check Hard Links: ' + (checkHardLinks === 'yes' ? 'Yes (count hard links once)' : 'No (count hard links separately)') + '\n';
+    message += 'Max Depth: ' + maxDepth + ' levels\n\n';
     message += 'This affects how scans are performed.';
     
     showModal(
-      'Update Parameters',
+      'Update DUC Parameters',
       message,
       'primary',
       saveDucParams,
-      { one_file_system: oneFileSystem, check_hard_links: checkHardLinks, max_depth: maxDepth }
+      { check_hard_links: checkHardLinks, max_depth: maxDepth }
     );
   }
 
@@ -245,19 +236,18 @@
       url: "set-duc-params.cgi",
       method: "POST",
       data: {
-        one_file_system: params.one_file_system,
         check_hard_links: params.check_hard_links,
         max_depth: params.max_depth
       },
       success: function(resp) {
         if (resp && resp.success) {
-          firework.launch('parameters updated', 'success', 3000);
+          firework.launch('DUC parameters updated', 'success', 3000);
         } else {
-          firework.launch('Failed to update parameters: ' + (resp && resp.error ? resp.error : 'unknown error'), 'danger', 3000);
+          firework.launch('Failed to update DUC parameters: ' + (resp && resp.error ? resp.error : 'unknown error'), 'danger', 3000);
         }
       },
       error: function(xhr, status, error) {
-        firework.launch('Failed to update parameters: ' + error, 'danger', 3000);
+        firework.launch('Failed to update DUC parameters: ' + error, 'danger', 3000);
       }
     });
   }

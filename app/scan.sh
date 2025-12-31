@@ -39,23 +39,16 @@ if mkdir "$LOCK_DIR" 2>/dev/null; then
         echo "Scan roots: ${SCAN_PATHS[*]}"
         # Load DUC parameters from config file
         DUC_PARAMS_FILE="/config/duc-params"
-        ONE_FILE_SYSTEM="no"
         CHECK_HARD_LINKS="yes"
         MAX_DEPTH="5"
 
         if [ -f "$DUC_PARAMS_FILE" ]; then
-            ONE_FILE_SYSTEM=$(grep "^ONE_FILE_SYSTEM=" "$DUC_PARAMS_FILE" 2>/dev/null | cut -d'=' -f2 || echo "no")
             CHECK_HARD_LINKS=$(grep "^CHECK_HARD_LINKS=" "$DUC_PARAMS_FILE" 2>/dev/null | cut -d'=' -f2 || echo "yes")
-            MAX_DEPTH=$(grep "^MAX_DEPTH=" "$DUC_PARAMS_FILE" 2>/dev/null | cut -d'=' -f2 || echo "")
+            MAX_DEPTH=$(grep "^MAX_DEPTH=" "$DUC_PARAMS_FILE" 2>/dev/null | cut -d'=' -f2 || echo "5")
         fi
 
         # Build DUC command arguments
         DUC_ARGS=("--progress")
-
-        # Add one-file-system option if enabled
-        if [ "$ONE_FILE_SYSTEM" = "yes" ]; then
-            DUC_ARGS+=("--one-file-system")
-        fi
 
         # Add check-hard-links option if enabled
         if [ "$CHECK_HARD_LINKS" = "yes" ]; then
@@ -76,9 +69,8 @@ if mkdir "$LOCK_DIR" 2>/dev/null; then
         echo "  Paths: ${SCAN_PATHS[*]}"
         echo "  Database: -d $SNAPSHOTS_FOLDER_TEMP/$SNAPSHOT_FILE"
         echo "  Exclude patterns: ${EXCLUDE[@]}"
-        echo "  One File System: $ONE_FILE_SYSTEM"
         echo "  Check Hard Links: $CHECK_HARD_LINKS"
-        echo "  Max Depth: ${MAX_DEPTH:-"unlimited"}"
+        echo "  Max Depth: $MAX_DEPTH"
         echo "Full command: /usr/local/bin/duc index ${DUC_ARGS[*]}"
         /usr/local/bin/duc index "${DUC_ARGS[@]}"
         # --exclude=Selektion --exclude=Speziell --exclude=roms
