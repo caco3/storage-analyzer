@@ -8,8 +8,9 @@
       Space- or comma-separated patterns. <br>Any file/folder containg such pattern will get excluded.<br>
       See <a href="https://github.com/zevv/duc/issues/174#issuecomment-276108127">here</a> for more details.
     </div>
-    <p></p>
+    <div class="config-controls">
     <button class="btn btn-primary config-button-left" onclick="confirmSaveExclude()">Save Patterns</button>
+    </div>
   </div>
   
   <hr class="section-separator">
@@ -41,9 +42,8 @@
     <div class="config-help-top">
     See <a href="https://rawgit.com/zevv/duc/master/doc/duc.1.html">here</a> for more details.
     </div>
-    <div class="config-controls">
     <span class="config-summary"></span>
-    <p><br></p>
+    <div class="config-controls">
     <button class="btn btn-primary config-button-left" onclick="confirmSaveDucParams()">Save Parameters</button>
   </div>
   </div>
@@ -88,9 +88,8 @@
     <div class="config-help-top">
     Resulting Cron configuration: <span id="schedule-cron"></span>
     </div>
-    <div class="config-controls">
     <span class="config-summary"></span>
-    <p><br></p>
+    <div class="config-controls">
     <button class="btn btn-primary config-button-left" onclick="confirmSaveSchedule()" title="Current schedule: 0 2 * * * *">Save Schedule</button>
   </div>
   
