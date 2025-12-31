@@ -12,7 +12,7 @@ cat <<EOF
  <body>
 EOF
 
-cat header.htm | sed 's/>Snapshot</>Log of last scan</'
+cat header.htm | sed 's/>Snapshot</>Log</'
 
 echo -n "<div class=\"log-display\">"
 LOG="$(bash log.cgi | sed 's#Content-type: text/plain##' | sed '/^$/{:a;N;s/\n$//;ta}' | sed 's/\x1b\[[0-9;]*[a-zA-Z]//g')"
