@@ -300,6 +300,10 @@
       success: function(response) {
         if (response.success) {
           firework.launch(response.message, 'success', 3000);
+          // Redirect to log page after successful manual scan
+          setTimeout(function() {
+            window.location.href = 'show-log.cgi';
+          }, 1000);
         } else {
           firework.launch(response.message, 'warning', 3000);
         }
