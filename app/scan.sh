@@ -59,7 +59,7 @@ if mkdir "$LOCK_DIR" 2>/dev/null; then
 
         echo "$(date): Relevant DUC index parameters:"
         echo "$(date):   Paths: ${SCAN_PATHS[*]}"
-        echo "$(date):   Database: -d $SNAPSHOTS_FOLDER_TEMP/$SNAPSHOT_FILE"
+        echo "$(date):   Database:  $SNAPSHOTS_FOLDER_TEMP/$SNAPSHOT_FILE"
         echo "$(date):   Exclude patterns: ${EXCLUDE[@]}"
         echo "$(date):   Check Hard Links: $CHECK_HARD_LINKS"
         echo "$(date):   Max Depth: $MAX_DEPTH"
