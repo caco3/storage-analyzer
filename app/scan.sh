@@ -18,7 +18,7 @@ SCAN_PATHS_FILE=/config/scan_paths
 SCAN_PATHS=()
 if [[ -f "$SCAN_PATHS_FILE" ]]; then
     while IFS= read -r p; do
-        p=$(echo "$p" | tr -d '\r\n')
+        p="/scan"$(echo "$p" | tr -d '\r\n')
         [[ -z "$p" ]] && continue
         SCAN_PATHS+=("$p")
     done < "$SCAN_PATHS_FILE"
@@ -46,8 +46,14 @@ if mkdir "$LOCK_DIR" 2>/dev/null; then
     {
         mkdir -p $SNAPSHOTS_FOLDER
         mkdir -p $SNAPSHOTS_FOLDER_TEMP
+        echo "" > $LOG_FILE # clear the log file
         echo "Start of scan: $(date) (Snapshot: $SNAPSHOT_FILE)"
         echo "Scan roots: ${SCAN_PATHS[*]}"
+        echo "Relevant DUC index parameters:"
+        echo "  Paths: ${SCAN_PATHS[*]}"
+        echo "  Database: -d $SNAPSHOTS_FOLDER_TEMP/$SNAPSHOT_FILE"
+        echo "  Exclude patterns: ${EXCLUDE[@]}"
+        echo "Full command: /usr/local/bin/duc index --progress ${SCAN_PATHS[*]} -d $SNAPSHOTS_FOLDER_TEMP/$SNAPSHOT_FILE --check-hard-links ${EXCLUDE[@]}"
         /usr/local/bin/duc index --progress "${SCAN_PATHS[@]}" -d $SNAPSHOTS_FOLDER_TEMP/$SNAPSHOT_FILE --check-hard-links ${EXCLUDE[@]}
         # --exclude=Selektion --exclude=Speziell --exclude=roms
         status=$?
