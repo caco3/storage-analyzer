@@ -10,14 +10,14 @@ echo ""
 
 if [ -d "$LOCK_DIR" ]; then
     message="A scan is already in progress"
-    response='{"success": false, "message": "$message"}'
+    response="{\"success\": false, \"message\": \"$message\"}"
 elif [ -d "$REQUEST_DIR" ]; then
     message="A scan has already been requested"
-    response='{"success": false, "message": "$message"}'
+    response="{\"success\": false, \"message\": \"$message\"}"
 else
     mkdir -p "$REQUEST_DIR"
     message="Scan will start within one minute"
-    response='{"success": true, "message": "$message"}'
+    response="{\"success\": true, \"message\": \"$message\"}"
 fi
 
 LOG_FILE="${DUC_LOG_FILE:-/var/log/duc.log}"
