@@ -14,19 +14,20 @@ LOCK_DIR="/tmp/scan.lock"
 
 mkdir -p /config
 
-SCAN_PATHS_FILE=/config/scan_paths
-SCAN_PATHS=()
-if [[ -f "$SCAN_PATHS_FILE" ]]; then
-    while IFS= read -r p; do
-        p="/scan"$(echo "$p" | tr -d '\r\n')
-        [[ -z "$p" ]] && continue
-        SCAN_PATHS+=("$p")
-    done < "$SCAN_PATHS_FILE"
-fi
+# TODO: Currently disabled because DUC needs to scan the entire /scan folder 
+#SCAN_PATHS_FILE=/config/scan_paths
+#SCAN_PATHS=()
+#if [[ -f "$SCAN_PATHS_FILE" ]]; then
+#    while IFS= read -r p; do
+#        p="/scan"$(echo "$p" | tr -d '\r\n')
+#        [[ -z "$p" ]] && continue
+#        SCAN_PATHS+=("$p")
+#    done < "$SCAN_PATHS_FILE"
+#fi
 
-if [[ ${#SCAN_PATHS[@]} -eq 0 ]]; then
+#if [[ ${#SCAN_PATHS[@]} -eq 0 ]]; then
     SCAN_PATHS=("/scan")
-fi
+#fi
 
 EXCLUDE_RAW=""
 if [[ -f /config/exclude ]]; then
