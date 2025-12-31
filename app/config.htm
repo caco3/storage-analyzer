@@ -17,8 +17,6 @@
   <!-- DUC Parameters Section -->
   <div class="actions-section">
     <h1>Parameters</h1>
-    See <a href="https://rawgit.com/zevv/duc/master/doc/duc.1.html">here</a> for more details.
-    
     <div class="config-grid">
       <label for="check-hard-links" class="config-label">Check Hard Links</label>
       <select id="check-hard-links" class="config-input-small">
@@ -39,6 +37,9 @@
         <option value="9">9 levels</option>
         <option value="10">10 levels</option>
       </select>
+    </div>
+    <div class="config-help-top">
+    See <a href="https://rawgit.com/zevv/duc/master/doc/duc.1.html">here</a> for more details.
     </div>
     <div class="config-controls">
     <span class="config-summary"></span>
@@ -84,7 +85,9 @@
       <label for="schedule-dom" class="config-label">Day of month</label>
       <input id="schedule-dom" type="number" min="1" max="31" value="1" class="config-input-small">
     </div>
-
+    <div class="config-help-top">
+    Resulting Cron configuration: <span id="schedule-cron"></span>
+    </div>
     <div class="config-controls">
     <span class="config-summary"></span>
     <p><br></p>
