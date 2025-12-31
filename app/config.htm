@@ -6,7 +6,8 @@
       <button class="btn btn-primary" onclick="confirmSaveExclude()">Save Exclude</button>
     </div>
     <div class="config-help-top">
-      Space- or comma-separated patterns.
+      Space- or comma-separated patterns. <br>Any file/folder containg such pattern will get excluded.<br>
+      See <a href="https://github.com/zevv/duc/issues/174#issuecomment-276108127">here</a> for more details.
     </div>
   </div>
   
@@ -14,7 +15,9 @@
   
   <!-- DUC Parameters Section -->
   <div class="actions-section">
-    <h1>DUC Parameters</h1>
+    <h1>Parameters</h1>
+    See <a href="https://rawgit.com/zevv/duc/master/doc/duc.1.html">here</a> for more details.
+    
     <div class="config-grid">
       <label for="one-file-system" class="config-label">One File System</label>
       <select id="one-file-system" class="config-input-small">
@@ -45,7 +48,7 @@
     <div class="config-controls">
     <span class="config-summary"></span>
     <p><br></p>
-    <button class="btn btn-primary config-button-right" onclick="confirmSaveDucParams()">Save DUC Parameters</button>
+    <button class="btn btn-primary config-button-right" onclick="confirmSaveDucParams()">Save Parameters</button>
   </div>
   </div>
   
@@ -208,11 +211,11 @@
           $('#check-hard-links').val(resp.check_hard_links || 'yes');
           $('#max-depth').val(resp.max_depth || '5');
         } else {
-          firework.launch('Failed to load DUC parameters', 'danger', 3000);
+          firework.launch('Failed to load parameters', 'danger', 3000);
         }
       },
       error: function(xhr, status, error) {
-        firework.launch('Failed to load DUC parameters: ' + error, 'danger', 3000);
+        firework.launch('Failed to load parameters: ' + error, 'danger', 3000);
       }
     });
   }
@@ -222,14 +225,14 @@
     var checkHardLinks = $('#check-hard-links').val();
     var maxDepth = $('#max-depth').val();
     
-    var message = 'Save DUC parameters?<br><br>';
+    var message = 'Save parameters?<br><br>';
     message += '<strong>One File System:</strong> ' + (oneFileSystem === 'yes' ? 'Yes (stay on one filesystem)' : 'No (cross filesystem boundaries)') + '<br>';
     message += '<strong>Check Hard Links:</strong> ' + (checkHardLinks === 'yes' ? 'Yes (count hard links once)' : 'No (count hard links separately)') + '<br>';
     message += '<strong>Max Depth:</strong> ' + maxDepth + ' levels<br><br>';
     message += 'This affects how scans are performed.';
     
     showModal(
-      'Update DUC Parameters',
+      'Update Parameters',
       message,
       'primary',
       saveDucParams,
@@ -248,13 +251,13 @@
       },
       success: function(resp) {
         if (resp && resp.success) {
-          firework.launch('DUC parameters updated', 'success', 3000);
+          firework.launch('parameters updated', 'success', 3000);
         } else {
-          firework.launch('Failed to update DUC parameters: ' + (resp && resp.error ? resp.error : 'unknown error'), 'danger', 3000);
+          firework.launch('Failed to update parameters: ' + (resp && resp.error ? resp.error : 'unknown error'), 'danger', 3000);
         }
       },
       error: function(xhr, status, error) {
-        firework.launch('Failed to update DUC parameters: ' + error, 'danger', 3000);
+        firework.launch('Failed to update parameters: ' + error, 'danger', 3000);
       }
     });
   }
