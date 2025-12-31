@@ -2,16 +2,16 @@
 
 set -euo pipefail
 
+echo "Content-type: application/json"
+echo ""
+
 # Read POST data
-read POST_DATA
+read -r POST_DATA || true
 
 # Parse POST data
 ONE_FILE_SYSTEM=$(echo "$POST_DATA" | sed -n 's/.*one_file_system=\([^&]*\).*/\1/p' | sed 's/%20/ /g' | sed 's/+//g')
 CHECK_HARD_LINKS=$(echo "$POST_DATA" | sed -n 's/.*check_hard_links=\([^&]*\).*/\1/p' | sed 's/%20/ /g' | sed 's/+//g')
 MAX_DEPTH=$(echo "$POST_DATA" | sed -n 's/.*max_depth=\([^&]*\).*/\1/p' | sed 's/%20/ /g' | sed 's/+//g')
-
-echo "Content-type: application/json"
-echo ""
 
 # Validate inputs
 case "$ONE_FILE_SYSTEM" in
