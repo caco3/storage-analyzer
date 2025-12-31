@@ -3,7 +3,7 @@
 set -euo pipefail
 
 # Source environment variables
-source "$(dirname "$0")/env.sh"
+source "/env.sh"
 
 # Ensure directories exist
 mkdir -p "$CONFIG_DIR"

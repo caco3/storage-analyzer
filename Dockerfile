@@ -79,6 +79,7 @@ COPY app/*.js /var/www/html/
 
 COPY app/startup.sh /startup.sh
 COPY app/scan.sh /scan.sh
+COPY app/env.sh /env.sh
 COPY app/manual_scan.sh /manual_scan.sh
 
 

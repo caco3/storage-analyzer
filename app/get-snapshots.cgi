@@ -3,7 +3,7 @@
 # For JSON simplicity (no coma after the last element, we simply add a 0 value at the end.
 
 # Source environment variables
-source "$(dirname "$0")/env.sh"
+source "/env.sh"
 
 echo "Content-type: application/json"
 echo ""

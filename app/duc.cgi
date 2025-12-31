@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Source environment variables
-source "$(dirname "$0")/env.sh"
+source "/env.sh"
 
 set -eo pipefail
 
