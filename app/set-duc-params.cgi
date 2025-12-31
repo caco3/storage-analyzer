@@ -31,6 +31,7 @@ esac
 
 # Save to config file
 CONFIG_FILE="/config/duc-params"
+mkdir -p /config
 cat > "$CONFIG_FILE" << EOF
 ONE_FILE_SYSTEM=$ONE_FILE_SYSTEM
 CHECK_HARD_LINKS=$CHECK_HARD_LINKS
