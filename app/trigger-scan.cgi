@@ -22,5 +22,5 @@ else
     response="{\"success\": true, \"message\": \"$message\"}"
 fi
 
-echo "$message" >> $LOG_FILE # append the message to the log file
+echo "$(date): $message" >> $LOG_FILE # append the message to the log file
 echo $response # UI response
