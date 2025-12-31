@@ -207,7 +207,9 @@
   }
 
   function updateScanPathsSummary() {
-    if (!selectedScanPaths || selectedScanPaths.length === 0) {
+    console.log(selectedScanPaths);
+    console.log(selectedScanPaths.length);
+    if (selectedScanPaths.length === 1 && selectedScanPaths[0] === "/scan") {
       $('#scanpaths-summary').html('All folders');
       return;
     }
