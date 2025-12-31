@@ -73,7 +73,10 @@ if mkdir "$LOCK_DIR" 2>/dev/null; then
         echo "Compressing snapshot: $SNAPSHOT_FILE..."
         zstd -19 -f "$SNAPSHOTS_FOLDER_TEMP/$SNAPSHOT_FILE" -o "$SNAPSHOTS_FOLDER/$SNAPSHOT_FILE.zst"
         echo "Snapshot size: "$(du -h "$SNAPSHOTS_FOLDER_TEMP/$SNAPSHOT_FILE" | cut -f1)" (compressed: "$(du -h "$SNAPSHOTS_FOLDER/$SNAPSHOT_FILE.zst" | cut -f1) ")"
+        # remove uncompressed snapshot, its not needed anymore
         rm "$SNAPSHOTS_FOLDER_TEMP/$SNAPSHOT_FILE"
+        # Cleanup: remove all uncompressed snapshots to save memory
+        rm "$SNAPSHOTS_FOLDER/*.db"
         # Propagate exit status of duc from this subshell to pipeline.
         exit $status
     } 2>&1 | tee -a "$LOG_FILE"

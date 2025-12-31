@@ -29,5 +29,7 @@ elif [ -d "$REQUEST_DIR" ]; then
     echo "A manual scan has already been requested and will start within one minute."
 else
     mkdir -p "$REQUEST_DIR"
+    # clear logfile
+    echo "" > "$LOG_FILE"
     echo "A scan will be started within one minute."
 fi
