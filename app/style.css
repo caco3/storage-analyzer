@@ -430,6 +430,14 @@ hr {
   font-size: 12px;
 }
 
+/* Hide disabled elements in schedule */
+.config-grid input:disabled,
+.config-grid select:disabled,
+.config-grid label:has(+ input:disabled),
+.config-grid label:has(+ select:disabled) {
+  display: none;
+}
+
 /* Modal specific styles */
 .modal-help-text {
   margin-bottom: 10px;
@@ -519,12 +527,13 @@ hr {
   height: 100%;
   background: rgba(0, 0, 0, 0.5);
   z-index: 1000;
-  justify-content: center;
-  align-items: center;
 }
 
-.modal-overlay.active {
-  display: flex;
+.modal-overlay.active,
+.modal-overlay[style*="block"] {
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
 }
 
 .modal-dialog {

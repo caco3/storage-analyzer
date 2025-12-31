@@ -84,7 +84,7 @@
       <div class="modal-filter-controls">
         <input id="folder-filter" type="text" placeholder="Filter folders..." class="modal-filter-input">
         <button class="btn btn-secondary" onclick="clearFolderFilter()">Clear</button>
-        <button class="btn" id="modal-confirm-btn">Confirm</button>
+        <button class="btn btn-primary" id="folder-confirm-btn">Confirm</button>
       </div>
       <div id="folder-list" class="modal-folder-list"></div>
       <div class="modal-footer-help">
@@ -110,7 +110,7 @@
     </div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-      <button class="btn" id="modal-confirm-btn" onclick="modalConfirm()">Confirm</button>
+      <button class="btn btn-primary" id="modal-confirm-btn" onclick="modalConfirm()">Confirm</button>
     </div>
   </div>
 </div>
@@ -188,7 +188,7 @@
             // Show warning about invalid paths
             var message = 'The following scan paths no longer exist and have been removed:\\n' + 
                          invalidPaths.join('\\n');
-            showStatus(message, 'warning');
+            firework.launch(message, 'warning', 4000);
             
             // Save the cleaned list (only valid paths)
             saveCleanedScanPaths(selectedScanPaths);
@@ -196,11 +196,11 @@
           
           updateScanPathsSummary();
         } else {
-          showStatus('Failed to load scan paths', 'error');
+          firework.launch('Failed to load scan paths', 'danger', 3000);
         }
       },
       error: function(xhr, status, error) {
-        showStatus('Failed to load scan paths: ' + error, 'error');
+        firework.launch('Failed to load scan paths: ' + error, 'danger', 3000);
       }
     });
   }
@@ -219,7 +219,7 @@
   }
 
   function openFolderDialog() {
-    firework.launch('Scanning folders, please wait...', 'success', 3000);
+    $('#folder-overlay').show();
     $.ajax({
       url: "list-scan-folders.cgi",
       method: "GET",
@@ -243,11 +243,11 @@
           renderFolderDialog();
           $('#folder-overlay').show();
         } else {
-          showStatus('Failed to list scan folders', 'error');
+          firework.launch('Failed to list scan folders', 'danger', 3000);
         }
       },
       error: function(xhr, status, error) {
-        showStatus('Failed to list scan folders: ' + error, 'error');
+        firework.launch('Failed to list scan folders: ' + error, 'danger', 3000);
       }
     });
   }
@@ -390,14 +390,14 @@
         if (resp && resp.success) {
           selectedScanPaths = absolutePaths;
           updateScanPathsSummary();
-          showStatus('Scan folders updated', 'success');
+          firework.launch('Scan folders updated', 'success', 3000);
           closeFolderDialog();
         } else {
-          showStatus('Failed to update scan folders: ' + (resp && resp.error ? resp.error : 'unknown error'), 'error');
+          firework.launch('Failed to update scan folders: ' + (resp && resp.error ? resp.error : 'unknown error'), 'danger', 3000);
         }
       },
       error: function(xhr, status, error) {
-        showStatus('Failed to update scan folders: ' + error, 'error');
+        firework.launch('Failed to update scan folders: ' + error, 'danger', 3000);
       }
     });
   }
@@ -439,11 +439,11 @@
         if (resp && resp.success) {
           $('#exclude-input').val(resp.exclude || '');
         } else {
-          showStatus('Failed to load exclude patterns', 'error');
+          firework.launch('Failed to load exclude patterns', 'danger', 3000);
         }
       },
       error: function(xhr, status, error) {
-        showStatus('Failed to load exclude patterns: ' + error, 'error');
+        firework.launch('Failed to load exclude patterns: ' + error, 'danger', 3000);
       }
     });
   }
@@ -466,14 +466,14 @@
       data: { exclude: exclude },
       success: function(resp) {
         if (resp && resp.success) {
-          showStatus('Exclude patterns updated', 'success');
+          firework.launch('Exclude patterns updated', 'success', 3000);
           $('#exclude-input').val(resp.exclude || exclude);
         } else {
-          showStatus('Failed to update exclude patterns: ' + (resp && resp.error ? resp.error : 'unknown error'), 'error');
+          firework.launch('Failed to update exclude patterns: ' + (resp && resp.error ? resp.error : 'unknown error'), 'danger', 3000);
         }
       },
       error: function(xhr, status, error) {
-        showStatus('Failed to update exclude patterns: ' + error, 'error');
+        firework.launch('Failed to update exclude patterns: ' + error, 'danger', 3000);
       }
     });
   }
@@ -498,11 +498,11 @@
           updateScheduleFieldsVisibility();
           updateSchedulePreview();
         } else {
-          showStatus('Failed to load schedule', 'error');
+          firework.launch('Failed to load schedule', 'danger', 3000);
         }
       },
       error: function(xhr, status, error) {
-        showStatus('Failed to load schedule: ' + error, 'error');
+        firework.launch('Failed to load schedule: ' + error, 'danger', 3000);
       }
     });
   }
@@ -599,17 +599,17 @@
       },
       success: function(resp) {
         if (resp && resp.success) {
-          showStatus('Schedule updated', 'success');
+          firework.launch('Schedule updated', 'success', 3000);
           $('#schedule-unsupported').hide();
           $('#schedule-preview').text('Cron: ' + (resp.schedule || payload.preview));
     // Update button tooltip with saved cron expression
     $('button[onclick="confirmSaveSchedule()"]').attr('title', 'Current schedule: ' + (resp.schedule || payload.preview));
         } else {
-          showStatus('Failed to update schedule: ' + (resp && resp.error ? resp.error : 'unknown error'), 'error');
+          firework.launch('Failed to update schedule: ' + (resp && resp.error ? resp.error : 'unknown error'), 'danger', 3000);
         }
       },
       error: function(xhr, status, error) {
-        showStatus('Failed to update schedule: ' + error, 'error');
+        firework.launch('Failed to update schedule: ' + error, 'danger', 3000);
       }
     });
   }
