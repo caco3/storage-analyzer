@@ -452,7 +452,7 @@
     var exclude = ($('#exclude-input').val() || '').trim();
     showModal(
       'Update Exclude Patterns',
-      'Save exclude patterns "' + exclude + '"? This affects scheduled and manual scans.',
+      'Save exclude patterns?<br><br><strong>' + exclude + '</strong><br><br>This affects scheduled and manual scans.',
       'primary',
       saveExclude,
       exclude
@@ -576,13 +576,33 @@
       return;
     }
 
-    var preview = $('#schedule-preview').text().replace('Cron: ', '');
+    // Generate cron expression and human readable text
+    var cron = '';
+    var humanReadable = '';
+    
+    if (mode === 'hourly') {
+      cron = minute + ' * * * *';
+      humanReadable = 'Every hour at minute ' + minute;
+    } else if (mode === 'daily') {
+      cron = minute + ' ' + hour + ' * * *';
+      humanReadable = 'Every day at ' + hour.toString().padStart(2, '0') + ':' + minute.toString().padStart(2, '0');
+    } else if (mode === 'weekly') {
+      cron = minute + ' ' + hour + ' * * ' + dow;
+      var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      humanReadable = 'Every ' + days[dow] + ' at ' + hour.toString().padStart(2, '0') + ':' + minute.toString().padStart(2, '0');
+    } else if (mode === 'monthly') {
+      cron = minute + ' ' + hour + ' ' + dom + ' * *';
+      humanReadable = 'Every month on day ' + dom + ' at ' + hour.toString().padStart(2, '0') + ':' + minute.toString().padStart(2, '0');
+    }
+    
+    var displayText = humanReadable + '<br><small>(Cron configuration: ' + cron + ')</small>';
+    
     showModal(
       'Update Schedule',
-      'Save the new schedule "' + preview + '"? This controls when automatic scans run.',
+      'Save the new schedule?<br><br><strong>' + displayText + '</strong><br><br>This controls when automatic scans run.',
       'primary',
       saveSchedule,
-      { mode: mode, minute: minute, hour: hour, dow: dow, dom: dom, preview: preview }
+      { mode: mode, minute: minute, hour: hour, dow: dow, dom: dom, preview: cron }
     );
   }
 
@@ -619,7 +639,7 @@
     pendingAction = onConfirm;
     pendingData = data;
     $('#modal-title').text(title);
-    $('#modal-message').text(message);
+    $('#modal-message').html(message);
     $('#modal-header').removeClass('danger primary').addClass(type);
     $('#modal-confirm-btn').removeClass('btn-danger btn-primary').addClass(type === 'danger' ? 'btn-danger' : 'btn-primary');
     $('#modal-overlay').show();
