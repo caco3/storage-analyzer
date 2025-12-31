@@ -219,7 +219,7 @@
     var bulletList = '<ul style="margin: 5px 0; padding-left: 20px; list-style-type: disc;">' + 
       display.map(function(path) { return '<li style="margin-bottom: 2px;">' + path + '</li>'; }).join('') + 
       '</ul>';
-    $('#scanpaths-summary').html("Selected folders:<br>" + bulletList);
+    $('#scanpaths-summary').html(bulletList);
   }
 
   function openFolderDialog() {

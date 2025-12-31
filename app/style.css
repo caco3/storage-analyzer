@@ -370,7 +370,7 @@ hr {
 
 .config-summary {
   color: #555;
-  font-size: 12px;
+  font-size: inherit;
   flex: 1;
 }
 
