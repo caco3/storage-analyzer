@@ -62,7 +62,6 @@ RUN dpkg -i /duc.deb \
         libpangocairo-1.0-0 \
         libtokyocabinet9 \
         nginx \
-        python3 \
         zstd \
  && rm -rf /var/lib/apt/lists/* \
  && rm -rf /var/www/html/* \
