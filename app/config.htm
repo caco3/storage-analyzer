@@ -3,12 +3,13 @@
     <h1>Exclude Patterns</h1>
     <div class="config-controls-small">
       <input id="exclude-input" type="text" class="config-input" placeholder="proc sys dev run tmp">
-      <button class="btn btn-primary config-button-right" onclick="confirmSaveDucParams()">Save Parameters</button>
     </div>
     <div class="config-help-top">
       Space- or comma-separated patterns. <br>Any file/folder containg such pattern will get excluded.<br>
       See <a href="https://github.com/zevv/duc/issues/174#issuecomment-276108127">here</a> for more details.
     </div>
+    <p></p>
+    <button class="btn btn-primary config-button-left" onclick="confirmSaveExclude()">Save Patterns</button>
   </div>
   
   <hr class="section-separator">
