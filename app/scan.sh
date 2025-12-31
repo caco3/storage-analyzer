@@ -37,12 +37,50 @@ if mkdir "$LOCK_DIR" 2>/dev/null; then
         echo "" > $LOG_FILE # clear the log file
         echo "Start of scan: $(date) (Snapshot: $SNAPSHOT_FILE)"
         echo "Scan roots: ${SCAN_PATHS[*]}"
+        # Load DUC parameters from config file
+        DUC_PARAMS_FILE="/config/duc-params"
+        ONE_FILE_SYSTEM="no"
+        CHECK_HARD_LINKS="yes"
+        MAX_DEPTH="5"
+
+        if [ -f "$DUC_PARAMS_FILE" ]; then
+            ONE_FILE_SYSTEM=$(grep "^ONE_FILE_SYSTEM=" "$DUC_PARAMS_FILE" 2>/dev/null | cut -d'=' -f2 || echo "no")
+            CHECK_HARD_LINKS=$(grep "^CHECK_HARD_LINKS=" "$DUC_PARAMS_FILE" 2>/dev/null | cut -d'=' -f2 || echo "yes")
+            MAX_DEPTH=$(grep "^MAX_DEPTH=" "$DUC_PARAMS_FILE" 2>/dev/null | cut -d'=' -f2 || echo "")
+        fi
+
+        # Build DUC command arguments
+        DUC_ARGS=("--progress")
+
+        # Add one-file-system option if enabled
+        if [ "$ONE_FILE_SYSTEM" = "yes" ]; then
+            DUC_ARGS+=("--one-file-system")
+        fi
+
+        # Add check-hard-links option if enabled
+        if [ "$CHECK_HARD_LINKS" = "yes" ]; then
+            DUC_ARGS+=("--check-hard-links")
+        fi
+
+        # Add max-depth option if set
+        if [ -n "$MAX_DEPTH" ] && [ "$MAX_DEPTH" -gt 0 ]; then
+            DUC_ARGS+=("--max-depth=$MAX_DEPTH")
+        fi
+
+        # Add database and paths
+        DUC_ARGS+=("-d" "$SNAPSHOTS_FOLDER_TEMP/$SNAPSHOT_FILE")
+        DUC_ARGS+=("${SCAN_PATHS[@]}")
+        DUC_ARGS+=("${EXCLUDE[@]}")
+
         echo "Relevant DUC index parameters:"
         echo "  Paths: ${SCAN_PATHS[*]}"
         echo "  Database: -d $SNAPSHOTS_FOLDER_TEMP/$SNAPSHOT_FILE"
         echo "  Exclude patterns: ${EXCLUDE[@]}"
-        echo "Full command: /usr/local/bin/duc index --progress ${SCAN_PATHS[*]} -d $SNAPSHOTS_FOLDER_TEMP/$SNAPSHOT_FILE --check-hard-links ${EXCLUDE[@]}"
-        /usr/local/bin/duc index --progress "${SCAN_PATHS[@]}" -d $SNAPSHOTS_FOLDER_TEMP/$SNAPSHOT_FILE --check-hard-links ${EXCLUDE[@]}
+        echo "  One File System: $ONE_FILE_SYSTEM"
+        echo "  Check Hard Links: $CHECK_HARD_LINKS"
+        echo "  Max Depth: ${MAX_DEPTH:-"unlimited"}"
+        echo "Full command: /usr/local/bin/duc index ${DUC_ARGS[*]}"
+        /usr/local/bin/duc index "${DUC_ARGS[@]}"
         # --exclude=Selektion --exclude=Speziell --exclude=roms
         status=$?
         echo "End of scan: $(date) (exit code: $status)"
