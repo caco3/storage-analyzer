@@ -2,7 +2,8 @@
 
 set -euo pipefail
 
-LOG_FILE="${DUC_LOG_FILE:-/var/log/duc.log}"
+# Source environment variables
+source "$(dirname "$0")/env.sh"
 
 echo "Content-type: text/plain"; echo
 cat "$LOG_FILE"

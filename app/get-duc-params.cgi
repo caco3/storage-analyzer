@@ -2,20 +2,21 @@
 
 set -euo pipefail
 
+# Source environment variables
+source "$(dirname "$0")/env.sh"
+
 echo "Content-type: application/json"
 echo ""
 
-CONFIG_FILE="/config/duc-params"
-
 # Load from config file if it exists
-if [ -f "$CONFIG_FILE" ]; then
-    CHECK_HARD_LINKS=$(grep "^CHECK_HARD_LINKS=" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2)
-    MAX_DEPTH=$(grep "^MAX_DEPTH=" "$CONFIG_FILE" 2>/dev/null | cut -d'=' -f2)
+if [ -f "$DUC_PARAMS_FILE" ]; then
+    CHECK_HARD_LINKS=$(grep "^CHECK_HARD_LINKS=" "$DUC_PARAMS_FILE" 2>/dev/null | cut -d'=' -f2)
+    MAX_DEPTH=$(grep "^MAX_DEPTH=" "$DUC_PARAMS_FILE" 2>/dev/null | cut -d'=' -f2)
 fi
 
 # Set defaults if empty
-CHECK_HARD_LINKS=${CHECK_HARD_LINKS:-"yes"}
-MAX_DEPTH=${MAX_DEPTH:-"5"}
+CHECK_HARD_LINKS=${CHECK_HARD_LINKS:-"$DEFAULT_CHECK_HARD_LINKS"}
+MAX_DEPTH=${MAX_DEPTH:-"$DEFAULT_MAX_DEPTH"}
 
 # Output JSON response
 cat << EOF

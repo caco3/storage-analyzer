@@ -2,25 +2,18 @@
 
 set -euo pipefail
 
+# Source environment variables
+source "$(dirname "$0")/env.sh"
 
-SNAPSHOTS_FOLDER="/snapshots"
-SNAPSHOTS_FOLDER_TEMP="/snapshots/temp"
-SNAPSHOT_FILE="duc_"`date +"%Y-%m-%d_%H-%M-%S".db`
-
-
-
-LOG_FILE="${DUC_LOG_FILE:-/var/log/duc.log}"
-LOCK_DIR="/tmp/scan.lock"
-
-mkdir -p /config
+SNAPSHOT_FILE="duc_"$(date +"%Y-%m-%d_%H-%M-%S".db)
 
 SCAN_PATHS=("/scan")
 
 EXCLUDE_RAW=""
-if [[ -f /config/exclude ]]; then
-    EXCLUDE_RAW=$(cat /config/exclude 2>/dev/null | tr -d '\r\n' || true)
+if [[ -f "$EXCLUDE_FILE" ]]; then
+    EXCLUDE_RAW=$(cat "$EXCLUDE_FILE" 2>/dev/null | tr -d '\r\n' || true)
 else
-    EXCLUDE_RAW="${EXCLUDE:-}"
+    EXCLUDE_RAW="${DEFAULT_EXCLUDE}"
 fi
 
 echo "Excluding files/folders with the following patterns: ${EXCLUDE_RAW}"
@@ -38,13 +31,12 @@ if mkdir "$LOCK_DIR" 2>/dev/null; then
         echo "Start of scan: $(date) (Snapshot: $SNAPSHOT_FILE)"
         echo "Scan roots: ${SCAN_PATHS[*]}"
         # Load DUC parameters from config file
-        DUC_PARAMS_FILE="/config/duc-params"
-        CHECK_HARD_LINKS="yes"
-        MAX_DEPTH="5"
+        CHECK_HARD_LINKS="$DEFAULT_CHECK_HARD_LINKS"
+        MAX_DEPTH="$DEFAULT_MAX_DEPTH"
 
         if [ -f "$DUC_PARAMS_FILE" ]; then
-            CHECK_HARD_LINKS=$(grep "^CHECK_HARD_LINKS=" "$DUC_PARAMS_FILE" 2>/dev/null | cut -d'=' -f2 || echo "yes")
-            MAX_DEPTH=$(grep "^MAX_DEPTH=" "$DUC_PARAMS_FILE" 2>/dev/null | cut -d'=' -f2 || echo "5")
+            CHECK_HARD_LINKS=$(grep "^CHECK_HARD_LINKS=" "$DUC_PARAMS_FILE" 2>/dev/null | cut -d'=' -f2 || echo "$DEFAULT_CHECK_HARD_LINKS")
+            MAX_DEPTH=$(grep "^MAX_DEPTH=" "$DUC_PARAMS_FILE" 2>/dev/null | cut -d'=' -f2 || echo "$DEFAULT_MAX_DEPTH")
         fi
 
         # Build DUC command arguments

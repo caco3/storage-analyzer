@@ -2,9 +2,8 @@
 
 set -euo pipefail
 
-LOCK_DIR="/tmp/scan.lock"
-REQUEST_DIR="/tmp/scan_requested"
-LOG_FILE="${DUC_LOG_FILE:-/var/log/duc.log}"
+# Source environment variables
+source "$(dirname "$0")/env.sh"
 
 echo "Content-type: application/json"
 echo ""

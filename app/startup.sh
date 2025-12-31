@@ -2,15 +2,20 @@
 
 set -euo pipefail
 
-LOG_FILE="${DUC_LOG_FILE:-/var/log/duc.log}"
+# Source environment variables
+source "$(dirname "$0")/env.sh"
+
+# Ensure directories exist
+mkdir -p "$CONFIG_DIR"
+mkdir -p "$SNAPSHOTS_FOLDER"
+mkdir -p "$SNAPSHOTS_FOLDER_TEMP"
+
 touch "$LOG_FILE"
 
-mkdir -p /config
-
-if [[ -f /config/schedule ]]; then
-	PERSISTED_SCHEDULE=$(cat /config/schedule | tr -d '\r\n')
+if [[ -f "$SCHEDULE_FILE" ]]; then
+	PERSISTED_SCHEDULE=$(cat "$SCHEDULE_FILE" | tr -d '\r\n')
 	if [[ -n "${PERSISTED_SCHEDULE}" ]]; then
-		echo "Using persisted schedule from /config/schedule: ${PERSISTED_SCHEDULE}" | tee -a "$LOG_FILE"
+		echo "Using persisted schedule from $SCHEDULE_FILE: ${PERSISTED_SCHEDULE}" | tee -a "$LOG_FILE"
 		SCHEDULE="${PERSISTED_SCHEDULE}"
 	fi
 fi
@@ -41,7 +46,6 @@ chmod 777 /var/run/fcgiwrap.socket
 test -f nohup.out && rm -f ./nohup.out
 
 # Cleanup: remove all uncompressed snapshots to save memory
-SNAPSHOTS_FOLDER="/snapshots"
 rm -f "$SNAPSHOTS_FOLDER"/*.db 2>/dev/null || true
 
 echo "You can access the service at http://localhost:80/ resp. at the exposed port"

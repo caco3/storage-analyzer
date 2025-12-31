@@ -2,6 +2,9 @@
 
 set -euo pipefail
 
+# Source environment variables
+source "$(dirname "$0")/env.sh"
+
 echo "Content-type: application/json"
 echo ""
 
@@ -23,15 +26,12 @@ case "$MAX_DEPTH" in
 esac
 
 # Save to config file
-CONFIG_FILE="/config/duc-params"
-mkdir -p /config
-cat > "$CONFIG_FILE" << EOF
+cat > "$DUC_PARAMS_FILE" << EOF
 CHECK_HARD_LINKS=$CHECK_HARD_LINKS
 MAX_DEPTH=$MAX_DEPTH
 EOF
 
 # Log the change
-LOG_FILE="${DUC_LOG_FILE:-/var/log/duc.log}"
 echo "$(date): parameters updated: check-hard-links=$CHECK_HARD_LINKS, max-depth=$MAX_DEPTH" >> "$LOG_FILE"
 
 # Output JSON response

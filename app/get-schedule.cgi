@@ -2,8 +2,8 @@
 
 set -euo pipefail
 
-CRON_FILE=/etc/cron.d/duc-index
-PERSISTED_SCHEDULE_FILE=/config/schedule
+# Source environment variables
+source "$(dirname "$0")/env.sh"
 
 echo "Content-type: application/json"
 echo ""
@@ -17,10 +17,8 @@ dow="1"
 dom="1"
 raw_line=""
 
-mkdir -p /config
-
-if [[ -f "$PERSISTED_SCHEDULE_FILE" ]]; then
-  schedule=$(cat "$PERSISTED_SCHEDULE_FILE" 2>/dev/null | tr -d '\r\n' || true)
+if [[ -f "$SCHEDULE_FILE" ]]; then
+  schedule=$(cat "$SCHEDULE_FILE" 2>/dev/null | tr -d '\r\n' || true)
 fi
 
 if [[ -z "$schedule" ]] && [[ -f "$CRON_FILE" ]]; then

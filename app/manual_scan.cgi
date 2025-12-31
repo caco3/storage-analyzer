@@ -2,9 +2,8 @@
 
 set -euo pipefail
 
-LOG_FILE="${DUC_LOG_FILE:-/var/log/duc.log}"
-LOCK_DIR="/tmp/scan.lock"
-REQUEST_DIR="/tmp/scan_requested"
+# Source environment variables
+source "$(dirname "$0")/env.sh"
 
 echo "Content-type: text/html"; echo
 

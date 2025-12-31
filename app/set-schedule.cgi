@@ -2,9 +2,8 @@
 
 set -euo pipefail
 
-CRON_FILE=/etc/cron.d/duc-index
-LOG_FILE="${DUC_LOG_FILE:-/var/log/duc.log}"
-PERSISTED_SCHEDULE_FILE=/config/schedule
+# Source environment variables
+source "$(dirname "$0")/env.sh"
 
 echo "Content-type: application/json"
 echo ""
@@ -80,8 +79,7 @@ case "$mode" in
     ;;
 esac
 
-mkdir -p /config
-echo "$schedule" > "$PERSISTED_SCHEDULE_FILE" 2>/dev/null || true
+echo "$schedule" > "$SCHEDULE_FILE" 2>/dev/null || true
 
 {
   echo "# Auto-generated Duc cron tasks"
