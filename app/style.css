@@ -80,6 +80,7 @@ a:hover {
   padding: 15px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   height: calc(100% - 65px - 15px);
+  overflow-y: auto;
 }
 
 /* Higher contrast titles on gradient background */
@@ -285,7 +286,7 @@ ul {
 #index { border-bottom: solid 1px #ddd; margin-bottom: 15px; }
 #index table td { padding: 5px 10px; }
 #graph { float: left; margin-right: 20px; margin-top: 0px; }
-#list { float: left; margin-top: 20px;}
+#list { float: left; margin-top: 20px; }
 #list table { 
   border-collapse: collapse;
   background: white;
