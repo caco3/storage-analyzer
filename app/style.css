@@ -371,6 +371,11 @@ hr {
 .config-summary {
   color: #555;
   font-size: 12px;
+  flex: 1;
+}
+
+.config-button-right {
+  margin-left: auto;
 }
 
 .config-help {

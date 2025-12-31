@@ -3,8 +3,8 @@
     <h1>Scan Folders</h1>
     <p>Select which folders to include in the storage analysis scan.</p>
     <div class="config-controls">
-      <button class="btn btn-primary" onclick="openFolderDialog()">Select folders</button>
       <span id="scanpaths-summary" class="config-summary"></span>
+      <button class="btn btn-primary config-button-right" onclick="openFolderDialog()">Select folders</button>
     </div>
     <div class="config-help">
       If no folder is selected, all folders under /scan will be included.
@@ -63,8 +63,10 @@
       <input id="schedule-dom" type="number" min="1" max="31" value="1" class="config-input-small">
     </div>
 
-    <div class="config-footer">
-    <button class="btn btn-primary" onclick="confirmSaveSchedule()" title="Current schedule: 0 2 * * * *">Save Schedule</button>
+    <div class="config-controls">
+    <span class="config-summary"></span>
+    <p><br></p>
+    <button class="btn btn-primary config-button-right" onclick="confirmSaveSchedule()" title="Current schedule: 0 2 * * * *">Save Schedule</button>
   </div>
   
   <!-- Status Display -->
