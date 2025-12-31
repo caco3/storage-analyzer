@@ -76,7 +76,7 @@ if mkdir "$LOCK_DIR" 2>/dev/null; then
         # remove uncompressed snapshot, its not needed anymore
         rm "$SNAPSHOTS_FOLDER_TEMP/$SNAPSHOT_FILE"
         # Cleanup: remove all uncompressed snapshots to save memory
-        rm "$SNAPSHOTS_FOLDER/*.db"
+        rm -f "$SNAPSHOTS_FOLDER"/*.db 2>/dev/null || true
         # Propagate exit status of duc from this subshell to pipeline.
         exit $status
     } 2>&1 | tee -a "$LOG_FILE"

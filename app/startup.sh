@@ -40,5 +40,9 @@ while ! [ -S /var/run/fcgiwrap.socket ]; do sleep .2; done
 chmod 777 /var/run/fcgiwrap.socket
 test -f nohup.out && rm -f ./nohup.out
 
+# Cleanup: remove all uncompressed snapshots to save memory
+SNAPSHOTS_FOLDER="/snapshots"
+rm -f "$SNAPSHOTS_FOLDER"/*.db 2>/dev/null || true
+
 echo "You can access the service at http://localhost:80/ resp. at the exposed port"
 nginx
