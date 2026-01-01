@@ -17,16 +17,18 @@
   var selectedIndex = 0;
 
   function formatSize(bytes) {
-    if (bytes > 1024 * 1024 * 1024) {
+    if (bytes > 1024*1024*1024*1024) {
+      return (Math.round(bytes * 10 / 1024 / 1024 / 1024 / 1024) / 10) + ' TB';
+    } else if (bytes > 1024*1024*1024) {
       return (Math.round(bytes * 10 / 1024 / 1024 / 1024) / 10) + ' GB';
-    } else if (bytes > 1024 * 1024) {
+    } else if (bytes > 1024*1024) {
       return (Math.round(bytes * 10 / 1024 / 1024) / 10) + ' MB';
     } else if (bytes > 1024) {
       return (Math.round(bytes * 10 / 1024) / 10) + ' KB';
     } else if (bytes > 0) {
       return bytes + ' B';
     }
-    return '';
+    return 'Unknown';
   }
 
   function urlFromIndex(index) {
@@ -90,6 +92,23 @@
     if (showSidebar) {
       $('#main_sidebar').show();
     }
+
+    // Handle scroll to hide/show keyboard shortcuts
+    var lastScrollTop = 0;
+    var scrollThreshold = 50;
+    
+    $('#snapshots').on('scroll', function() {
+      var scrollTop = $(this).scrollTop();
+      var shortcuts = $('#keyboard-shortcuts');
+      
+      if (scrollTop > scrollThreshold) {
+        shortcuts.addClass('hidden');
+      } else {
+        shortcuts.removeClass('hidden');
+      }
+      
+      lastScrollTop = scrollTop;
+    });
 
     $.ajax('get-snapshots.cgi', {
       success: function(data) {
@@ -176,13 +195,12 @@
   </nav>
 
   <div id="main_sidebar">
-    <div class="keyboard-shortcuts">
-      <h3>Keyboard shortcuts</h3>
-      <p><strong>n</strong>: next snapshot<br><strong>p</strong>: previous snapshot</p>
-    </div>
-
     <h1>Snapshots</h1>
     <div id="snapshots">
+      <div class="keyboard-shortcuts" id="keyboard-shortcuts">
+        <h3>Keyboard shortcuts</h3>
+        <p><strong>n</strong>: next snapshot<br><strong>p</strong>: previous snapshot</p>
+      </div>
       <ul id="snapshots_list"></ul>
     </div>
   </div>
