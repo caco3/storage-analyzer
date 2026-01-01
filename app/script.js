@@ -760,7 +760,6 @@ function updateTrendStats(data) {
     $('#current-size').text('--');
     $('#growth-rate').text('--');
     $('#avg-daily-growth').text('--');
-    $('#projected-size').text('--');
     return;
   }
   
@@ -772,12 +771,10 @@ function updateTrendStats(data) {
   const daysDiff = Math.ceil((new Date(current.timestamp) - new Date(oldest.timestamp)) / (1000 * 60 * 60 * 24));
   const avgDailyGrowth = daysDiff > 0 ? totalGrowth / daysDiff : 0;
   const growthRate = previous.size > 0 ? ((current.size - previous.size) / previous.size * 100) : 0;
-  const projectedSize = current.size + (avgDailyGrowth * 30);
   
   $('#current-size').text(formatSize(current.size));
   $('#growth-rate').text(growthRate.toFixed(2) + '%');
   $('#avg-daily-growth').text(formatSize(avgDailyGrowth) + '/day');
-  $('#projected-size').text(formatSize(projectedSize));
 }
 
 function updateTrendTable(data) {
