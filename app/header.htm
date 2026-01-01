@@ -70,6 +70,20 @@
               snap.title + sizeText + '</a></span>');
       list.append(li);
     });
+
+    // Scroll to selected snapshot after rendering
+    setTimeout(function() {
+      var selectedElement = $('#snapshots_list .selected_snapshot').closest('li');
+      if (selectedElement.length > 0) {
+        var snapshotsContainer = $('#snapshots');
+        var containerHeight = snapshotsContainer.height();
+        var elementTop = selectedElement.position().top;
+        var elementHeight = selectedElement.outerHeight();
+        var scrollTop = elementTop - (containerHeight / 2) + (elementHeight / 2);
+        
+        snapshotsContainer.scrollTop(scrollTop);
+      }
+    }, 100);
   }
 
   function renderBreadcrumb() {
