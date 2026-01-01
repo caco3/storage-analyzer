@@ -56,13 +56,17 @@
     var list = $('#snapshots_list');
     list.empty();
 
-    snapshots.forEach(function(snap, i) {
+    // Reverse the snapshots array to show latest on top
+    var reversedSnapshots = snapshots.slice().reverse();
+    
+    reversedSnapshots.forEach(function(snap, i) {
+      var originalIndex = snapshots.length - 1 - i; // Get the original index
       var cls = snap.selected ? 'selected_snapshot' : 'not_selected_snapshot';
       var linkCls = snap.selected ? 'snapshot_link selected_snapshot_link' : 'snapshot_link';
       var sizeText = snap.size > 0 ? ' (' + formatSize(snap.size) + ')' : '';
       
       var li = $('<li class="snapshot"></li>');
-      li.html('<span class="' + cls + '"><a class="' + linkCls + '" href="' + urlFromIndex(i) + '">' + 
+      li.html('<span class="' + cls + '"><a class="' + linkCls + '" href="' + urlFromIndex(originalIndex) + '">' + 
               snap.title + sizeText + '</a></span>');
       list.append(li);
     });
