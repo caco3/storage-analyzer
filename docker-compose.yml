@@ -15,12 +15,23 @@ services:
       # example: scan the whole root partition
       - type: bind
         source: /
-        target: /scan/root
+        target: /scan
         read_only: true
+      # example: Alternatively add several folders (any folder mounted into /scan will get scanned)
+      #- type: bind
+      #  source: /volume1
+      #  target: /scan/volume1
+      #  read_only: true
+      #- type: bind
+      #  source: /volume2
+      #  target: /scan/volume2
+      #  read_only: true
+
       # persist configuration
       - type: volume
         source: config
         target: /config
+
       # Persist snapshots outside the container
       - type: volume
         source: snapshots
