@@ -16,20 +16,8 @@ cat <<EOF
   <title>Storage Analyzer</title>
   <meta charset="utf-8" />
   <link rel="stylesheet" type="text/css" href="style.css">
-  <script>
-    // Auto-reload log content every second
-    function reloadLog() {
-      fetch('show-log.cgi?content=only')
-        .then(response => response.text())
-        .then(data => {
-          document.getElementById('log-display').innerHTML = data;
-        })
-        .catch(error => console.error('Error reloading log:', error));
-    }
-    
-    // Start auto-reload
-    setInterval(reloadLog, 1000);
-  </script>
+  <script src="jquery.min.js"></script>
+  <script src="script.js"></script>
 </head>
  <body>
 EOF

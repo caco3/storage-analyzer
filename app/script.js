@@ -28,6 +28,30 @@ function formatSize(bytes) {
   return 'Unknown';
 }
 
+function convertUtcToLocal(utcTimestamp) {
+  let date;
+  
+  // Detect format and parse accordingly
+  if (utcTimestamp.includes('UTC')) {
+    // RFC 2822 format: "Thu Jan  1 22:45:01 UTC 2026"
+    date = new Date(utcTimestamp);
+  } else if (utcTimestamp.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/)) {
+    // ISO format: "2026-01-01 22:45:01"
+    date = new Date(utcTimestamp + 'Z'); // 'Z' indicates UTC
+  } else {
+    // Unknown format, return as-is
+    return utcTimestamp;
+  }
+  
+  // Format to local time
+  return date.getFullYear() + '-' +
+    String(date.getMonth() + 1).padStart(2, '0') + '-' +
+    String(date.getDate()).padStart(2, '0') + ' ' +
+    String(date.getHours()).padStart(2, '0') + ':' +
+    String(date.getMinutes()).padStart(2, '0') + ':' +
+    String(date.getSeconds()).padStart(2, '0');
+}
+
 function urlFromIndex(index) {
   if (index < 0 || index >= snapshots.length) {
     firework.launch('Invalid snapshot index', 'danger', 2000);
@@ -43,9 +67,11 @@ function urlFromPath(db, p) {
 
 function parseDbName(name) {
   var parts = name.replace('/snapshots/duc_', '').replace('.db', '').replace('_', ' ').split(' ');
+  var utcTimestamp = parts[0] + ' ' + parts[1].split('_')[0].replaceAll('-', ':');
+  var localTimestamp = convertUtcToLocal(utcTimestamp);
   return {
     db: parts[0] + '_' + parts[1].replaceAll(':', '-'),
-    title: parts[0] + ' ' + parts[1].split('_')[0].replaceAll('-', ':')
+    title: localTimestamp
   };
 }
 
@@ -148,16 +174,17 @@ function loadSnapshots() {
         var db = data.snapshots[i];
         var name = db.name.replace("/snapshots/duc_", "").replace(".db", "");
         var displayName = name.replace("_", " ").split(" ");
-        var title = displayName[0] + " " + displayName[1].split("_")[0].replaceAll("-", ":");
+        var utcTimestamp = displayName[0] + " " + displayName[1].split("_")[0].replaceAll("-", ":");
+        var localTimestamp = convertUtcToLocal(utcTimestamp);
         
         var sizeText = formatSize(db.size);
         var dbSizeText = formatSize(db['db-size']);
         
         var row = '<tr>' +
-          '<td>' + title + '</td>' +
+          '<td>' + localTimestamp + '</td>' +
           '<td>' + sizeText + '</td>' +
           '<td>' + dbSizeText + '</td>' +
-          '<td><button class="btn btn-danger" onclick="confirmDelete(\'' + db.name + '\', \'' + title + '\')">Delete</button></td>' +
+          '<td><button class="btn btn-danger" onclick="confirmDelete(\'' + db.name + '\', \'' + localTimestamp + '\')">Delete</button></td>' +
           '</tr>';
         tbody.append(row);
       }
@@ -692,6 +719,17 @@ $(document).ready(function() {
   if (pathname.includes('trend.cgi')) {
     initializeTrendPage();
   }
+  
+  // Log page initialization
+  if (pathname.includes('show-log.cgi')) {
+    // Convert initial log content to local time
+    const logDisplay = document.getElementById('log-display');
+    if (logDisplay) {
+      logDisplay.innerHTML = convertLogUtcToLocal(logDisplay.innerHTML);
+    }
+    // Start auto-reload
+    setInterval(reloadLog, 1000);
+  }
 });
 
 // Trend page functions
@@ -760,9 +798,10 @@ function updateTrendChart(data) {
           const height = (point.size / maxSize) * 200;
           const dateLabel = point.date ? point.date.split('-').slice(1).join('/') : '';
           const sizeLabel = formatSize(point.size);
+          const localTimestamp = convertUtcToLocal(point.timestamp);
           return `
             <div class="chart-bar clickable-bar" style="height: ${height}px;" 
-                 title="${point.timestamp}: ${sizeLabel}"
+                 title="${localTimestamp}: ${sizeLabel}"
                  data-snapshot="${point.filename}"
                  onclick="navigateToSnapshot('${point.filename}')">
               <div class="bar-size-label">${sizeLabel}</div>
@@ -823,9 +862,12 @@ function updateTrendTable(data) {
     const changePercentText = changePercent > 0 ? '+' + changePercent.toFixed(2) + '%' : 
                              changePercent < 0 ? changePercent.toFixed(2) + '%' : '--';
     
+    // Convert UTC timestamp to local time
+    const localTimestamp = convertUtcToLocal(point.timestamp);
+    
     return `
       <tr>
-        <td>${point.timestamp}</td>
+        <td>${localTimestamp}</td>
         <td>${formatSize(point.size)}</td>
         <td class="${changeClass}">${changeText}</td>
         <td class="${changeClass}">${changePercentText}</td>
@@ -834,4 +876,22 @@ function updateTrendTable(data) {
   }).join('');
   
   $('#trend-data-table tbody').html(tableRows);
+}
+
+// Log page functions
+function convertLogUtcToLocal(logContent) {
+  return logContent.replace(/^([A-Z][a-z]{2} [A-Z][a-z]{2} +\d{1,2} \d{2}:\d{2}:\d{2} UTC \d{4})(.*)$/gm, function(match, utcTime, rest) {
+    const localTime = convertUtcToLocal(utcTime);
+    return localTime + rest;
+  });
+}
+
+function reloadLog() {
+  fetch('show-log.cgi?content=only')
+    .then(response => response.text())
+    .then(data => {
+      const localData = convertLogUtcToLocal(data);
+      document.getElementById('log-display').innerHTML = localData;
+    })
+    .catch(error => console.error('Error reloading log:', error));
 }
