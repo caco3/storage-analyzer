@@ -922,46 +922,11 @@ hr {
   margin: 0 4px;
 }
 /* Keyboard shortcuts inside snapshots */
-
-#snapshots .keyboard-shortcuts.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-#snapshots .keyboard-shortcuts h3 {
-  margin: 0 0 5px 0;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-#snapshots .keyboard-shortcuts p {
-  margin: 0;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.7);
-}
-
-/* Updated keyboard shortcuts styling */
-
-#snapshots .keyboard-shortcuts.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-#snapshots .keyboard-shortcuts p {
-  margin: 0;
-  font-size: 13px;
-  color: #000;
-  line-height: 1.4;
-}
-
-/* Keyboard shortcuts with frame */
-
 #snapshots .keyboard-shortcuts.hidden {
   opacity: 0;
   transform: translateY(-10px);
   pointer-events: none;
 }
-
 #snapshots .keyboard-shortcuts h3 {
   margin: 0;
   font-size: 14px;
