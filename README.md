@@ -6,6 +6,7 @@
 This tool uses [Duc](https://duc.zevv.nl/) to provide a comprehensive Storage Analyzer similar to [Synology's Storage Analyzer](https://www.synology.com/en-us/dsm/packages/StorageAnalyzer). It offers advanced storage usage analysis with an intuitive web interface, designed primarily for NAS systems but compatible with any Docker-enabled system. Features include visual sunburst charts, historical snapshot comparisons, flexible scheduling, and granular configuration options for efficient storage monitoring and management.
 
 ![Screenshot](Screenshot1.png)
+![Screenshot](Screenshot2.png) ![Screenshot](Screenshot3.png)
 
 The built docker images can be found on [Docker Hub](https://hub.docker.com/r/caco3x/storage-analyzer/).
 
