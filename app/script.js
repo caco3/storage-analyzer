@@ -52,6 +52,21 @@ function convertUtcToLocal(utcTimestamp) {
     String(date.getSeconds()).padStart(2, '0');
 }
 
+function convertLocalToUtcHour(localHour) {
+  // Get current date to avoid DST issues
+  const now = new Date();
+  const localDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), localHour, 0, 0);
+  const utcDate = new Date(localDate.getTime() + (localDate.getTimezoneOffset() * 60000));
+  return utcDate.getHours();
+}
+
+function convertUtcToLocalHour(utcHour) {
+  // Get current date to avoid DST issues
+  const now = new Date();
+  const utcDate = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), utcHour, 0, 0));
+  return utcDate.getHours();
+}
+
 function urlFromIndex(index) {
   if (index < 0 || index >= snapshots.length) {
     firework.launch('Invalid snapshot index', 'danger', 2000);
@@ -388,7 +403,11 @@ function loadSchedule() {
           $('#schedule-unsupported').hide();
           $('#schedule-mode').val(resp.mode);
           $('#schedule-minute').val(resp.minute);
-          $('#schedule-hour').val(resp.hour);
+          
+          // Convert UTC hour to local hour for display
+          var localHour = convertUtcToLocalHour(resp.hour);
+          $('#schedule-hour').val(localHour);
+          
           $('#schedule-dow').val(resp.dow);
           $('#schedule-dom').val(resp.dom);
         } else {
@@ -431,19 +450,22 @@ function updateScheduleFieldsVisibility() {
 function updateSchedulePreview() {
   var mode = $('#schedule-mode').val();
   var minute = parseInt($('#schedule-minute').val() || '0', 10);
-  var hour = parseInt($('#schedule-hour').val() || '0', 10);
+  var localHour = parseInt($('#schedule-hour').val() || '0', 10);
   var dow = $('#schedule-dow').val();
   var dom = parseInt($('#schedule-dom').val() || '1', 10);
+
+  // Convert local hour to UTC for cron
+  var utcHour = convertLocalToUtcHour(localHour);
 
   var cron = '';
   if (mode === 'hourly') {
     cron = minute + ' * * * *';
   } else if (mode === 'daily') {
-    cron = minute + ' ' + hour + ' * * *';
+    cron = minute + ' ' + utcHour + ' * * *';
   } else if (mode === 'weekly') {
-    cron = minute + ' ' + hour + ' * * ' + dow;
+    cron = minute + ' ' + utcHour + ' * * ' + dow;
   } else if (mode === 'monthly') {
-    cron = minute + ' ' + hour + ' ' + dom + ' * *';
+    cron = minute + ' ' + utcHour + ' ' + dom + ' * *';
   }
 
   $('#schedule-preview').text('Cron: ' + cron);
@@ -455,7 +477,7 @@ function updateSchedulePreview() {
 function confirmSaveSchedule() {
   var mode = $('#schedule-mode').val();
   var minute = parseInt($('#schedule-minute').val() || '0', 10);
-  var hour = parseInt($('#schedule-hour').val() || '0', 10);
+  var localHour = parseInt($('#schedule-hour').val() || '0', 10);
   var dow = parseInt($('#schedule-dow').val() || '1', 10);
   var dom = parseInt($('#schedule-dom').val() || '1', 10);
 
@@ -463,7 +485,7 @@ function confirmSaveSchedule() {
     showStatus('Minute must be between 0 and 59', 'error');
     return;
   }
-  if ((mode === 'daily' || mode === 'weekly' || mode === 'monthly') && (isNaN(hour) || hour < 0 || hour > 23)) {
+  if ((mode === 'daily' || mode === 'weekly' || mode === 'monthly') && (isNaN(localHour) || localHour < 0 || localHour > 23)) {
     showStatus('Hour must be between 0 and 23', 'error');
     return;
   }
@@ -476,6 +498,9 @@ function confirmSaveSchedule() {
     return;
   }
 
+  // Convert local hour to UTC for server
+  var utcHour = convertLocalToUtcHour(localHour);
+
   // Generate cron expression and human readable text
   var cron = '';
   var humanReadable = '';
@@ -484,15 +509,15 @@ function confirmSaveSchedule() {
     cron = minute + ' * * * *';
     humanReadable = 'Every hour at minute ' + minute;
   } else if (mode === 'daily') {
-    cron = minute + ' ' + hour + ' * * *';
-    humanReadable = 'Every day at ' + hour.toString().padStart(2, '0') + ':' + minute.toString().padStart(2, '0');
+    cron = minute + ' ' + utcHour + ' * * *';
+    humanReadable = 'Every day at ' + localHour.toString().padStart(2, '0') + ':' + minute.toString().padStart(2, '0');
   } else if (mode === 'weekly') {
-    cron = minute + ' ' + hour + ' * * ' + dow;
+    cron = minute + ' ' + utcHour + ' * * ' + dow;
     var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    humanReadable = 'Every ' + days[dow] + ' at ' + hour.toString().padStart(2, '0') + ':' + minute.toString().padStart(2, '0');
+    humanReadable = 'Every ' + days[dow] + ' at ' + localHour.toString().padStart(2, '0') + ':' + minute.toString().padStart(2, '0');
   } else if (mode === 'monthly') {
-    cron = minute + ' ' + hour + ' ' + dom + ' * *';
-    humanReadable = 'Every month on day ' + dom + ' at ' + hour.toString().padStart(2, '0') + ':' + minute.toString().padStart(2, '0');
+    cron = minute + ' ' + utcHour + ' ' + dom + ' * *';
+    humanReadable = 'Every month on day ' + dom + ' at ' + localHour.toString().padStart(2, '0') + ':' + minute.toString().padStart(2, '0');
   }
   
   var displayText = humanReadable + '<br><small>(Cron configuration: ' + cron + ')</small>';
@@ -502,7 +527,7 @@ function confirmSaveSchedule() {
     'Save the new schedule?<br><br><strong>' + displayText + '</strong><br><br>This controls when automatic scans run.',
     'primary',
     saveSchedule,
-    { mode: mode, minute: minute, hour: hour, dow: dow, dom: dom, preview: cron }
+    { mode: mode, minute: minute, hour: utcHour, dow: dow, dom: dom, preview: cron }
   );
 }
 
