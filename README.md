@@ -17,6 +17,7 @@ The built docker images can be found on [Docker Hub](https://hub.docker.com/r/ca
 - **Interactive Web Interface**: Modern, responsive UI for browsing storage usage with visual feedback
 - **Visual Storage Analysis**: Color-coded directory listings and interactive sunburst charts for intuitive data visualization
 - **Trend Analysis**: Visualize storage usage trends over time with interactive charts showing historical growth patterns and statistics
+- **Sidebar Trend Indicators**: Quick trend visualization in snapshot list showing growth/shrinkage between consecutive snapshots
 - **Snapshot Management**: Create, view, compare, and delete multiple storage snapshots over time
 - **Flexible Configuration**: 
   - Customizable exclude patterns to skip unwanted files/directories
