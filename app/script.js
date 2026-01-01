@@ -127,14 +127,15 @@ function renderSnapshots() {
     }
     
     var li = $('<li class="snapshot"></li>');
-    var content = '<span class="' + cls + '"><a class="' + linkCls + '" href="' + urlFromIndex(originalIndex) + '">' + 
-                  snap.title + sizeText + '</a>';
+    var snapshotUrl = urlFromIndex(originalIndex);
+    var content = '<a class="' + linkCls + '" href="' + snapshotUrl + '" style="display: block; width: 100%; height: 100%; text-decoration: none;">' +
+                  '<span class="' + cls + '">' + snap.title + sizeText;
     
     if (trendIndicator) {
       content += '<span class="trend-indicator ' + trendClass + '">' + trendIndicator + '</span>';
     }
     
-    content += '</span>';
+    content += '</span></a>';
     li.html(content);
     list.append(li);
   });
