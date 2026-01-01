@@ -330,7 +330,11 @@ ul {
 #main { margin: 0; padding: 0; }
 #index { border-bottom: solid 1px #ddd; margin-bottom: 10px; }
 #index table td { padding: 5px 10px; }
-#graph { float: left; margin-right: 15px; margin-top: 0px; }
+#graph { 
+  float: left; 
+  margin-right: 15px; 
+  margin-top: 0px;
+}
 #list { float: left; margin-top: 10px; }
 #list table { 
   border-collapse: collapse;

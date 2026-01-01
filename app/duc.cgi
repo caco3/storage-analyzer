@@ -126,4 +126,4 @@ fi
 
 zstd -d "$DB.zst" -o "$DB"
 
-exec duc cgi --database=$DB --dpi=120 --size=600 --list --levels 1 --header header.htm --footer footer.htm --css-url style.css --db-error db-error.cgi --path-error path-error.cgi
+exec duc cgi --database=$DB --dpi=120 --size=600 --list --levels 1 --gradient --header header.htm --footer footer.htm --css-url style.css --db-error db-error.cgi --path-error path-error.cgi
