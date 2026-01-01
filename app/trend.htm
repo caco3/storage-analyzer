@@ -1,0 +1,289 @@
+<div class="trend-container">
+  <h2>Storage Trend Analysis</h2>
+  
+  <div class="trend-controls">
+    <div class="control-group">
+      <label for="trend-period">Period:</label>
+      <select id="trend-period">
+        <option value="7">Last 7 days</option>
+        <option value="30">Last 30 days</option>
+        <option value="90">Last 90 days</option>
+        <option value="365">Last year</option>
+        <option value="all">All time</option>
+      </select>
+    </div>
+    
+    <button id="refresh-trend" class="btn btn-primary">Refresh</button>
+  </div>
+  
+  <div class="trend-content">
+    <div class="trend-chart">
+      <h3>Storage Usage Over Time</h3>
+      <div id="trend-chart-container">
+        <div class="chart-placeholder">
+          <p>Loading trend data...</p>
+          <div class="loading-spinner"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="trend-stats">
+      <h3>Statistics</h3>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-label">Current Size:</span>
+          <span class="stat-value" id="current-size">--</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Growth Rate:</span>
+          <span class="stat-value" id="growth-rate">--</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Average Daily Growth:</span>
+          <span class="stat-value" id="avg-daily-growth">--</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Projected Size (30 days):</span>
+          <span class="stat-value" id="projected-size">--</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="trend-table">
+      <h3>Historical Data</h3>
+      <table id="trend-data-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Size</th>
+            <th>Change</th>
+            <th>Change %</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="4" class="loading-row">Loading data...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<style>
+.trend-container {
+  padding: 20px;
+}
+
+.trend-controls {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  align-items: end;
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.control-group label {
+  font-weight: bold;
+  color: #006680;
+}
+
+.help-text {
+  font-size: 11px;
+  color: #666;
+  font-style: italic;
+  margin-top: 2px;
+  display: block;
+}
+
+.control-group select {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
+  min-width: 150px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s;
+}
+
+.btn-primary {
+  background-color: #006680;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #005570;
+}
+
+.trend-content {
+  display: grid;
+  gap: 30px;
+}
+
+.trend-chart, .trend-stats, .trend-table {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.chart-placeholder {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.loading-spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #006680;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 20px auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.stat-label {
+  font-weight: bold;
+  color: #006680;
+}
+
+.stat-value {
+  font-family: monospace;
+  font-weight: bold;
+}
+
+#trend-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+#trend-data-table th,
+#trend-data-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+#trend-data-table th {
+  background: rgba(0, 102, 128, 0.1);
+  font-weight: bold;
+  color: #006680;
+}
+
+.loading-row {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+.change-positive {
+  color: #d32f2f;
+}
+
+.change-negative {
+  color: #2e7d32;
+}
+
+@media (max-width: 768px) {
+  .trend-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.simple-chart {
+  margin-top: 20px;
+}
+
+.chart-bars {
+  display: flex;
+  align-items: end;
+  height: 300px;
+  gap: 10px;
+  padding: 30px 10px 40px 10px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.chart-bar {
+  flex: 1;
+  background: linear-gradient(to top, #006680, #0088aa);
+  border-radius: 4px 4px 0 0;
+  min-height: 10px;
+  position: relative;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding-top: 5px;
+}
+
+.clickable-bar:hover {
+  background: linear-gradient(to top, #005570, #007799);
+}
+
+.bar-size-label {
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: #006680;
+  font-weight: bold;
+  white-space: nowrap;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+}
+
+.bar-label {
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: #666;
+  white-space: nowrap;
+}
+</style>

@@ -14,15 +14,15 @@ var pendingData = null;
 
 // Utility functions
 function formatSize(bytes) {
-  if (bytes > 1024*1024*1024*1024) {
+  if (Math.abs(bytes) > 1024*1024*1024*1024) {
     return (Math.round(bytes * 10 / 1024 / 1024 / 1024 / 1024) / 10) + ' TB';
-  } else if (bytes > 1024*1024*1024) {
+  } else if (Math.abs(bytes) > 1024*1024*1024) {
     return (Math.round(bytes * 10 / 1024 / 1024 / 1024) / 10) + ' GB';
-  } else if (bytes > 1024*1024) {
+  } else if (Math.abs(bytes) > 1024*1024) {
     return (Math.round(bytes * 10 / 1024 / 1024) / 10) + ' MB';
-  } else if (bytes > 1024) {
+  } else if (Math.abs(bytes) > 1024) {
     return (Math.round(bytes * 10 / 1024) / 10) + ' KB';
-  } else if (bytes > 0) {
+  } else if (Math.abs(bytes) > 0) {
     return bytes + ' B';
   }
   return 'Unknown';
@@ -658,4 +658,154 @@ $(document).ready(function() {
   if (pathname.includes('path-error.cgi')) {
     handlePathError();
   }
+  
+  // Trend page initialization
+  if (pathname.includes('trend.cgi')) {
+    initializeTrendPage();
+  }
 });
+
+// Trend page functions
+function initializeTrendPage() {
+  loadTrendData();
+  
+  $('#refresh-trend').click(loadTrendData);
+  $('#trend-period').change(loadTrendData);
+}
+
+function loadTrendData() {
+  const period = $('#trend-period').val();
+  
+  // Show loading state
+  $('#trend-chart-container').html('<div class="chart-placeholder"><p>Loading trend data...</p><div class="loading-spinner"></div></div>');
+  $('#trend-data-table tbody').html('<tr><td colspan="4" class="loading-row">Loading data...</td></tr>');
+  
+  // Fetch real data from server
+  $.ajax({
+    url: 'get-trend-data.cgi',
+    method: 'GET',
+    dataType: 'json',
+    success: function(data) {
+      const filteredData = filterDataByPeriod(data.snapshots, period);
+      updateTrendChart(filteredData);
+      updateTrendStats(filteredData);
+      updateTrendTable(filteredData);
+    },
+    error: function(xhr, status, error) {
+      $('#trend-chart-container').html('<div class="chart-placeholder"><p>Error loading data: ' + error + '</p></div>');
+      $('#trend-data-table tbody').html('<tr><td colspan="4" class="loading-row">Error loading data</td></tr>');
+    }
+  });
+}
+
+function filterDataByPeriod(snapshots, period) {
+  if (!snapshots || snapshots.length === 0) return [];
+  
+  const now = new Date();
+  let cutoffDate = new Date();
+  
+  if (period === 'all') {
+    return snapshots;
+  } else {
+    const days = parseInt(period);
+    cutoffDate.setDate(now.getDate() - days);
+  }
+  
+  return snapshots.filter(snapshot => {
+    const snapshotDate = new Date(snapshot.timestamp);
+    return snapshotDate >= cutoffDate;
+  });
+}
+
+function updateTrendChart(data) {
+  if (!data || data.length === 0) {
+    $('#trend-chart-container').html('<div class="chart-placeholder"><p>No data available for selected period</p></div>');
+    return;
+  }
+  
+  const chartHtml = `
+    <div class="simple-chart">
+      <div class="chart-bars">
+        ${data.map((point, index) => {
+          const maxSize = Math.max(...data.map(d => d.size));
+          const height = (point.size / maxSize) * 200;
+          const dateLabel = point.date ? point.date.split('-').slice(1).join('/') : '';
+          const sizeLabel = formatSize(point.size);
+          return `
+            <div class="chart-bar clickable-bar" style="height: ${height}px;" 
+                 title="${point.timestamp}: ${sizeLabel}"
+                 data-snapshot="${point.filename}"
+                 onclick="navigateToSnapshot('${point.filename}')">
+              <div class="bar-size-label">${sizeLabel}</div>
+              <div class="bar-label">${dateLabel}</div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+  
+  $('#trend-chart-container').html(chartHtml);
+}
+
+function navigateToSnapshot(filename) {
+  // Extract database name from filename (remove .db extension if present)
+  const dbName = filename.replace('.db', '');
+  // Navigate to the main view with this snapshot
+  window.location.href = `duc.cgi?cmd=index&db=/snapshots/${dbName}.db&path=/scan`;
+}
+
+function updateTrendStats(data) {
+  if (!data || data.length < 2) {
+    $('#current-size').text('--');
+    $('#growth-rate').text('--');
+    $('#avg-daily-growth').text('--');
+    $('#projected-size').text('--');
+    return;
+  }
+  
+  const current = data[data.length - 1];
+  const previous = data[data.length - 2];
+  const oldest = data[0];
+  
+  const totalGrowth = current.size - oldest.size;
+  const daysDiff = Math.ceil((new Date(current.timestamp) - new Date(oldest.timestamp)) / (1000 * 60 * 60 * 24));
+  const avgDailyGrowth = daysDiff > 0 ? totalGrowth / daysDiff : 0;
+  const growthRate = previous.size > 0 ? ((current.size - previous.size) / previous.size * 100) : 0;
+  const projectedSize = current.size + (avgDailyGrowth * 30);
+  
+  $('#current-size').text(formatSize(current.size));
+  $('#growth-rate').text(growthRate.toFixed(2) + '%');
+  $('#avg-daily-growth').text(formatSize(avgDailyGrowth) + '/day');
+  $('#projected-size').text(formatSize(projectedSize));
+}
+
+function updateTrendTable(data) {
+  if (!data || data.length === 0) {
+    $('#trend-data-table tbody').html('<tr><td colspan="4" class="loading-row">No data available</td></tr>');
+    return;
+  }
+  
+  const tableRows = data.slice().reverse().map((point, index) => {
+    const change = index < data.length - 1 ? point.size - data[data.length - 2 - index].size : 0;
+    const changePercent = index < data.length - 1 && data[data.length - 2 - index].size > 0 
+      ? (change / data[data.length - 2 - index].size * 100) 
+      : 0;
+    
+    const changeClass = change > 0 ? 'change-positive' : change < 0 ? 'change-negative' : '';
+    const changeText = change > 0 ? '+' + formatSize(change) : change < 0 ? formatSize(change) : '--';
+    const changePercentText = changePercent > 0 ? '+' + changePercent.toFixed(2) + '%' : 
+                             changePercent < 0 ? changePercent.toFixed(2) + '%' : '--';
+    
+    return `
+      <tr>
+        <td>${point.timestamp}</td>
+        <td>${formatSize(point.size)}</td>
+        <td class="${changeClass}">${changeText}</td>
+        <td class="${changeClass}">${changePercentText}</td>
+      </tr>
+    `;
+  }).join('');
+  
+  $('#trend-data-table tbody').html(tableRows);
+}
