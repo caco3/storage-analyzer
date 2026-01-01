@@ -96,7 +96,10 @@ if [[ "$PATH_IN_SNAPSHOT" == "" ]]; then
     exit 0
 fi
 
-# Decompress the snapshot
+# Cleanup: remove all uncompressed snapshots to save memory
+rm -f "$SNAPSHOTS_FOLDER"/*.db 2>/dev/null || true
+
+# Decompress the selected snapshot
 rm -f "$DB" 2>/dev/null || true
 if [[ ! -f "$DB.zst" ]]; then
     echo "Content-type: text/html"; echo
