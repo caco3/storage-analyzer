@@ -20,39 +20,58 @@ The built docker images can be found on [Docker Hub](https://hub.docker.com/r/ca
 
 ## Usage Examples
 ### With Docker Compose
-Use [docker-compose.yml](docker-compose.yml).
+See [docker-compose.yml](docker-compose.yml).
 
 Run it with 
 ```
 docker compose up --build --detach
 ```
 
-This compose file also mounts a persistent volume to `/config` so settings (e.g. the scan schedule configured in the management page) survive container rebuild/removal.
+This compose file also mounts a persistent volume to `/config` so settings (e.g. the scan parameters) survive container rebuild/removal.
+And the `/snapshots` volume is mounted to persist the snapshots.
 
 ### Without Docker Compose
 ```
 docker run \
     -p 80:80 \
-    --mount type=bind,src=/,dst=/scan/root,readonly \
+    --mount type=bind,src=/,dst=/scan,readonly \
     --mount type=volume,src=snapshots,dst=/snapshots \
     --mount type=volume,src=config,dst=/config \
     caco3x/storage-analyzer
 ```
 
-## Parameters
- - ### SCHEDULE
-   A cron-expression that determines when an automatic scan is started.
+If you don't want to scan the ehole root but just some subfolders, use
+```
+docker run \
+    -p 80:80 \
+    --mount type=bind,src=/volume1,dst=/scan/volume1,readonly \
+    --mount type=bind,src=/volume2,dst=/scan/volume2,readonly \
+    --mount type=volume,src=snapshots,dst=/snapshots \
+    --mount type=volume,src=config,dst=/config \
+    caco3x/storage-analyzer
+```
 
- - ### /config (volume)
+## Needed volumes
+ - ### /config
    Persisted configuration directory. Mount this path to keep settings across container rebuild/removal.
 
    Currently persisted settings:
    - `/config/schedule` (scan schedule)
    - `/config/exclude` (exclude patterns)
 
-## Developing
+ - ### /snapshots
+   Persisted snapshots directory. Mount this path to keep snapshots across container rebuild/removal.
+
+ - ### /scan
+   The scan directory. This is where the [DUC](https://duc.zevv.nl/) tool will scan for files and folders.
+   
+   If you want to scan the whole root partition, mount it to `/scan`.
+   
+   If you want to scan several folders, mount them to `/scan/folder1`, `/scan/folder2`, etc.
+
+## Development
 ```bash
-sudo docker run -it -p 8080:80 --mount type=bind,src=$PWD/..,dst=/scan/temp,readonly -v $PWD/snapshots:/snapshots -v $PWD/app:/var/www/html --name storage-analyzer $(docker build -q .)
+sudo docker run -it -p 8080:80 --mount type=bind,src=$PWD,dst=/scan,readonly -v $PWD/snapshots:/snapshots -v $PWD/app:/var/www/html --name storage-analyzer $(docker build -q .)
 sudo docker stop storage-analyzer; sudo docker rm storage-analyzer
 ```
 
@@ -68,7 +87,13 @@ sudo docker push caco3x/storage-analyzer:latest
 ```
 
 ## References
-- Duc homepage: https://duc.zevv.nl/
+- DUC homepage: https://duc.zevv.nl/
+
+## Support
+
+If you find this project useful, please consider supporting it by giving it a star on [GitHub](https://github.com/caco3x/storage-analyzer).
+
+If you find an issue, please open an issue on [GitHub](https://github.com/caco3x/storage-analyzer/issues).
 
 ## Similar Projects
 - https://github.com/MaximilianKoestler/duc-service
