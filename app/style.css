@@ -242,6 +242,32 @@ ul {
   width: 100%;
 }
 
+/* Trend indicators in sidebar */
+.trend-indicator {
+  display: block;
+  font-size: 10px;
+  margin-top: 2px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.trend-up {
+  color: #d32f2f;
+  background: rgba(211, 47, 47, 0.1);
+}
+
+.trend-down {
+  color: #2e7d32;
+  background: rgba(46, 125, 50, 0.1);
+}
+
+.trend-same {
+  color: #666;
+  background: rgba(102, 102, 102, 0.1);
+}
+
 /* Path Breadcrumb */
 #path {
   margin: 10px 0;

@@ -63,9 +63,38 @@ function renderSnapshots() {
     var linkCls = snap.selected ? 'snapshot_link selected_snapshot_link' : 'snapshot_link';
     var sizeText = snap.size > 0 ? ' (' + formatSize(snap.size) + ')' : '';
     
+    // Calculate trend compared to previous snapshot
+    var trendIndicator = '';
+    var trendClass = '';
+    if (snap.size > 0 && i < reversedSnapshots.length - 1) {
+      var prevSnap = reversedSnapshots[i + 1];
+      if (prevSnap && prevSnap.size > 0) {
+        var change = snap.size - prevSnap.size;
+        var changePercent = (change / prevSnap.size) * 100;
+        
+        if (change > 0) {
+          trendIndicator = ' ↑' + formatSize(change) + ' (+' + changePercent.toFixed(1) + '%)';
+          trendClass = 'trend-up';
+        } else if (change < 0) {
+          trendIndicator = ' ↓' + formatSize(Math.abs(change)) + ' (' + changePercent.toFixed(1) + '%)';
+          trendClass = 'trend-down';
+        } else {
+          trendIndicator = ' → 0%';
+          trendClass = 'trend-same';
+        }
+      }
+    }
+    
     var li = $('<li class="snapshot"></li>');
-    li.html('<span class="' + cls + '"><a class="' + linkCls + '" href="' + urlFromIndex(originalIndex) + '">' + 
-            snap.title + sizeText + '</a></span>');
+    var content = '<span class="' + cls + '"><a class="' + linkCls + '" href="' + urlFromIndex(originalIndex) + '">' + 
+                  snap.title + sizeText + '</a>';
+    
+    if (trendIndicator) {
+      content += '<span class="trend-indicator ' + trendClass + '">' + trendIndicator + '</span>';
+    }
+    
+    content += '</span>';
+    li.html(content);
     list.append(li);
   });
 
