@@ -24,7 +24,7 @@ RUN apt-get update -qq \
 
 ADD https://github.com/zevv/duc/releases/download/${DUC_VERSION}/duc-${DUC_VERSION}.tar.gz .
 
-COPY *.patch ./
+COPY patches/*.patch ./
 
 RUN tar xzf duc-${DUC_VERSION}.tar.gz \
  && cd duc-${DUC_VERSION} \
