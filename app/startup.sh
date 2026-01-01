@@ -2,26 +2,31 @@
 
 set -euo pipefail
 
-LOG_FILE="${DUC_LOG_FILE:-/var/log/duc.log}"
+# Source environment variables
+source "/env.sh"
+
+# Ensure directories exist
+mkdir -p "$CONFIG_DIR"
+mkdir -p "$SNAPSHOTS_FOLDER"
+mkdir -p "$SNAPSHOTS_FOLDER_TEMP"
+
 touch "$LOG_FILE"
 
-mkdir -p /config
-
-if [[ -f /config/schedule ]]; then
-	PERSISTED_SCHEDULE=$(cat /config/schedule | tr -d '\r\n')
+if [[ -f "$SCHEDULE_FILE" ]]; then
+	PERSISTED_SCHEDULE=$(cat "$SCHEDULE_FILE" | tr -d '\r\n')
 	if [[ -n "${PERSISTED_SCHEDULE}" ]]; then
-		echo "Using persisted schedule from /config/schedule: ${PERSISTED_SCHEDULE}" | tee -a "$LOG_FILE"
+		echo "$(date): Using persisted schedule from $SCHEDULE_FILE: ${PERSISTED_SCHEDULE}" | tee -a "$LOG_FILE"
 		SCHEDULE="${PERSISTED_SCHEDULE}"
 	fi
 fi
 
 # Basic validation for SCHEDULE (5 fields). If invalid, fallback to midnight.
 if ! echo "$SCHEDULE" | awk 'NF==5' >/dev/null 2>&1; then
-	echo "Invalid SCHEDULE '$SCHEDULE' - falling back to '0 0 * * *'" | tee -a "$LOG_FILE"
+	echo "$(date): Invalid SCHEDULE '$SCHEDULE' - falling back to '0 0 * * *'" | tee -a "$LOG_FILE"
 	SCHEDULE="0 0 * * *"
 fi
 
-echo "Creating cron schedule: $SCHEDULE"
+echo "$(date): Creating cron schedule: $SCHEDULE"
 CRON_FILE=/etc/cron.d/duc-index
 {
 	echo "# Auto-generated Duc cron tasks"
@@ -33,12 +38,15 @@ CRON_FILE=/etc/cron.d/duc-index
 chmod 0644 "$CRON_FILE"
 cron
 
-echo "Launching webserver"
+echo "$(date): Launching webserver"
 rm -f /var/run/fcgiwrap.socket
 nohup fcgiwrap -s unix:/var/run/fcgiwrap.socket &
 while ! [ -S /var/run/fcgiwrap.socket ]; do sleep .2; done
 chmod 777 /var/run/fcgiwrap.socket
 test -f nohup.out && rm -f ./nohup.out
 
-echo "You can access the service at http://localhost:80/ resp. at the exposed port"
+# Cleanup: remove all uncompressed snapshots to save memory
+rm -f "$SNAPSHOTS_FOLDER"/*.db 2>/dev/null || true
+
+echo "$(date): You can access the service at http://localhost:80/ resp. at the exposed port"
 nginx

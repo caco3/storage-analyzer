@@ -62,7 +62,6 @@ RUN dpkg -i /duc.deb \
         libpangocairo-1.0-0 \
         libtokyocabinet9 \
         nginx \
-        python3 \
         zstd \
  && rm -rf /var/lib/apt/lists/* \
  && rm -rf /var/www/html/* \
@@ -80,6 +79,7 @@ COPY app/*.js /var/www/html/
 
 COPY app/startup.sh /startup.sh
 COPY app/scan.sh /scan.sh
+COPY app/env.sh /env.sh
 COPY app/manual_scan.sh /manual_scan.sh
 
 

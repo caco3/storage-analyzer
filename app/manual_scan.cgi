@@ -2,9 +2,8 @@
 
 set -euo pipefail
 
-LOG_FILE="${DUC_LOG_FILE:-/var/log/duc.log}"
-LOCK_DIR="/tmp/scan.lock"
-REQUEST_DIR="/tmp/scan_requested"
+# Source environment variables
+source "/env.sh"
 
 echo "Content-type: text/html"; echo
 
@@ -21,13 +20,15 @@ EOF
 cat header.htm | sed 's/>Snapshot</>Manual Scan</'
 
 if [ -d "$LOCK_DIR" ]; then
-    echo "A scan is already in progress:"; echo
+    echo "$(date): A scan is already in progress:"; echo
     echo -n "<div class=\"log-display\">"
     cat "$LOG_FILE"
     echo "</div>"
 elif [ -d "$REQUEST_DIR" ]; then
-    echo "A manual scan has already been requested and will start within one minute."
+    echo "$(date): A manual scan has already been requested and will start within one minute."
 else
     mkdir -p "$REQUEST_DIR"
-    echo "A scan will be started within one minute."
+    # clear logfile
+    echo "" > "$LOG_FILE"
+    echo "$(date): A scan will be started within one minute."
 fi

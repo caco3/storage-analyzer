@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-DB_FOLDER="/snapshots"
+# Source environment variables
+source "/env.sh"
 
 set -eo pipefail
 
@@ -42,7 +43,7 @@ get_PATH_IN_SNAPSHOT() {
 get_latest_db() {
     # Scans the snapshot folder and sets the variable $DB with the name of the latest snapshot (based on date/time in filename)
     WD=`pwd`
-    for f in `ls -c1 $DB_FOLDER/duc_*.db.zst | sort -r`; do
+    for f in `ls -c1 $SNAPSHOTS_FOLDER/duc_*.db.zst | sort -r`; do
         DB="${f%.zst}"
         break
     done

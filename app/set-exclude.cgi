@@ -2,8 +2,8 @@
 
 set -euo pipefail
 
-LOG_FILE="${DUC_LOG_FILE:-/var/log/duc.log}"
-PERSISTED_EXCLUDE_FILE=/config/exclude
+# Source environment variables
+source "/env.sh"
 
 echo "Content-type: application/json"
 echo ""
@@ -22,9 +22,7 @@ val=$(echo "$POST_DATA" | sed -n 's/.*\bexclude=\([^&]*\).*/\1/p' | head -n 1)
 exclude=$(urldecode "$val")
 exclude=$(echo "$exclude" | tr -d '\r\n')
 
-mkdir -p /config
-
-echo "$exclude" > "$PERSISTED_EXCLUDE_FILE" 2>/dev/null || true
+echo "$exclude" > "$EXCLUDE_FILE" 2>/dev/null || true
 
 echo "$(date) Updated exclude patterns to: $exclude" >> "$LOG_FILE" 2>/dev/null || true
 

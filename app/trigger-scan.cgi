@@ -2,8 +2,8 @@
 
 set -euo pipefail
 
-LOCK_DIR="/tmp/scan.lock"
-REQUEST_DIR="/tmp/scan_requested"
+# Source environment variables
+source "/env.sh"
 
 echo "Content-type: application/json"
 echo ""
@@ -16,11 +16,11 @@ elif [ -d "$REQUEST_DIR" ]; then
     response="{\"success\": false, \"message\": \"$message\"}"
 else
     mkdir -p "$REQUEST_DIR"
+    # clear logfile
+    echo "" > "$LOG_FILE"
     message="Scan will start within one minute"
     response="{\"success\": true, \"message\": \"$message\"}"
 fi
 
-LOG_FILE="${DUC_LOG_FILE:-/var/log/duc.log}"
-
-echo "$message" >> $LOG_FILE # append the message to the log file
+echo "$(date): $message" >> $LOG_FILE # append the message to the log file
 echo $response # UI response

@@ -1,29 +1,51 @@
-<!-- Scan Folders Section -->
- <!-- TODO: Currrently disabled because DUC needs to scan the entire /scan folder
-  <div class="actions-section">
-    <h1>Scan Folders</h1>
-    <p>Select which folders to include in the storage analysis scan.</p>
-    <div class="config-controls">
-      <span id="scanpaths-summary" class="config-summary"></span>
-      <button class="btn btn-primary config-button-right" onclick="openFolderDialog()">Select folders</button>
-    </div>
-    <div class="config-help">
-      If no folder is selected, all folders under /scan will be included.
-    </div>
-  </div>
-  
-  <hr class="section-separator">
--->
   <!-- Exclude Patterns Section -->
   <div class="actions-section">
     <h1>Exclude Patterns</h1>
     <div class="config-controls-small">
       <input id="exclude-input" type="text" class="config-input" placeholder="proc sys dev run tmp">
-      <button class="btn btn-primary" onclick="confirmSaveExclude()">Save Exclude</button>
     </div>
     <div class="config-help-top">
-      Space- or comma-separated patterns.
+      Space- or comma-separated patterns. <br>Any file/folder containg such pattern will get excluded.<br>
+      See <a href="https://github.com/zevv/duc/issues/174#issuecomment-276108127">here</a> for more details.
     </div>
+    <div class="config-controls">
+    <button class="btn btn-primary config-button-left" onclick="confirmSaveExclude()">Save Patterns</button>
+    </div>
+  </div>
+  
+  <hr class="section-separator">
+  
+  <!-- DUC Parameters Section -->
+  <div class="actions-section">
+    <h1>Parameters</h1>
+    <div class="config-grid">
+      <label for="check-hard-links" class="config-label">Check Hard Links</label>
+      <select id="check-hard-links" class="config-input-small">
+        <option value="yes">Yes (count hard links once)</option>
+        <option value="no">No (count hard links separately)</option>
+      </select>
+
+      <label for="max-depth" class="config-label">Max Depth</label>
+      <select id="max-depth" class="config-input-small">
+        <option value="1">1 level</option>
+        <option value="2">2 levels</option>
+        <option value="3">3 levels</option>
+        <option value="4">4 levels</option>
+        <option value="5">5 levels</option>
+        <option value="6">6 levels</option>
+        <option value="7">7 levels</option>
+        <option value="8">8 levels</option>
+        <option value="9">9 levels</option>
+        <option value="10">10 levels</option>
+      </select>
+    </div>
+    <div class="config-help-top">
+    See <a href="https://rawgit.com/zevv/duc/master/doc/duc.1.html">here</a> for more details.
+    </div>
+    <span class="config-summary"></span>
+    <div class="config-controls">
+    <button class="btn btn-primary config-button-left" onclick="confirmSaveDucParams()">Save Parameters</button>
+  </div>
   </div>
   
   <hr class="section-separator">
@@ -63,42 +85,17 @@
       <label for="schedule-dom" class="config-label">Day of month</label>
       <input id="schedule-dom" type="number" min="1" max="31" value="1" class="config-input-small">
     </div>
-
-    <div class="config-controls">
+    <div class="config-help-top">
+    Resulting Cron configuration: <span id="schedule-cron"></span>
+    </div>
     <span class="config-summary"></span>
-    <p><br></p>
-    <button class="btn btn-primary config-button-right" onclick="confirmSaveSchedule()" title="Current schedule: 0 2 * * * *">Save Schedule</button>
+    <div class="config-controls">
+    <button class="btn btn-primary config-button-left" onclick="confirmSaveSchedule()" title="Current schedule: 0 2 * * * *">Save Schedule</button>
   </div>
   
   <!-- Status Display -->
   <div id="status-message"></div>
 
-<!-- Scan Folder Selection Dialog -->
-<div id="folder-overlay" class="modal-overlay">
-  <div class="modal-dialog">
-    <div class="modal-header">
-      <h3>Select scan folders</h3>
-      <button class="modal-close" onclick="closeFolderDialog()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <div class="modal-help-text">
-        Select one or more folders to include in the next scan.
-      </div>
-      <div class="modal-filter-controls">
-        <input id="folder-filter" type="text" placeholder="Filter folders..." class="modal-filter-input">
-        <button class="btn btn-secondary" onclick="clearFolderFilter()">Clear</button>
-      </div>
-      <div id="folder-list" class="modal-folder-list"></div>
-      <div class="modal-footer-help">
-        If no folder is selected, all folders are scanned.
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeFolderDialog()">Cancel</button>
-      <button class="btn btn-primary" onclick="saveFolderSelection()">Save</button>
-    </div>
-  </div>
-</div>
 
 <!-- Custom Modal Dialog -->
 <div id="modal-overlay" class="modal-overlay">
@@ -117,554 +114,10 @@
   </div>
 </div>
 
-<script>
-  var selectedScanPaths = [];
-  var availableScanFolders = [];
-  var folderDialogExplicit = new Set();
-  var folderFilter = '';
-  var pendingAction = null;
-  var pendingData = null;
-
-  // Load configuration on page load
-  $(document).ready(function() {
-    loadScanPaths();
-    loadExclude();
-    loadSchedule();
-    bindScheduleUI();
-  });
-
-  function showStatus(message, type) {
-    var statusClass = 'actions-section';
-    if (type === 'success') {
-      statusClass = 'actions-section';
-      $('#status-message').html('<div class="' + statusClass + ' status-success">' + message + '</div>');
-    } else if (type === 'error') {
-      statusClass = 'actions-section';
-      $('#status-message').html('<div class="' + statusClass + ' status-error">' + message + '</div>');
-    } else if (type === 'warning') {
-      statusClass = 'actions-section';
-      $('#status-message').html('<div class="' + statusClass + ' status-warning">' + message + '</div>');
-    }
-    setTimeout(function() {
-      $('#status-message').html('');
-    }, 5000);
-  }
-
-  // Scan Folders Functions
-  function loadScanPaths() {
-    $.ajax({
-      url: "get-scan-paths.cgi",
-      method: "GET",
-      success: function(resp) {
-        if (resp && resp.success) {
-          selectedScanPaths = (resp.paths || []).map(function(p) {
-            try {
-              var decoded = decodeURIComponent(p);
-              // Convert relative paths to absolute for internal use
-              if (decoded === '' || decoded === '/') {
-                return '/scan';
-              } else {
-                return '/scan' + decoded;
-              }
-            } catch (e) {
-              return p;
-            }
-          });
-          
-          // Handle invalid paths
-          if (resp.invalid_paths && resp.invalid_paths.length > 0) {
-            var invalidPaths = resp.invalid_paths.map(function(p) {
-              try {
-                var decoded = decodeURIComponent(p);
-                // Convert relative paths to absolute for display
-                if (decoded === '' || decoded === '/') {
-                  return '/scan';
-                } else {
-                  return '/scan' + decoded;
-                }
-              } catch (e) {
-                return p;
-              }
-            });
-            
-            // Show warning about invalid paths
-            var message = 'The following scan paths no longer exist and have been removed:\\n' + 
-                         invalidPaths.join('\\n');
-            firework.launch(message, 'warning', 4000);
-            
-            // Save the cleaned list (only valid paths)
-            saveCleanedScanPaths(selectedScanPaths);
-          }
-          
-          updateScanPathsSummary();
-        } else {
-          firework.launch('Failed to load scan paths', 'danger', 3000);
-        }
-      },
-      error: function(xhr, status, error) {
-        firework.launch('Failed to load scan paths: ' + error, 'danger', 3000);
-      }
-    });
-  }
-
-  function updateScanPathsSummary() {
-    console.log(selectedScanPaths);
-    console.log(selectedScanPaths.length);
-    if (selectedScanPaths.length === 1 && selectedScanPaths[0] === "/scan") {
-      $('#scanpaths-summary').html('All folders');
-      return;
-    }
-    var display = selectedScanPaths.map(function(p) {
-      if (p === '/scan' || p === '/scan/') return '/';
-      if (p.indexOf('/scan/') === 0) return p.slice('/scan'.length);
-      return p;
-    });
-    var bulletList = '<ul style="margin: 5px 0; padding-left: 20px; list-style-type: disc;">' + 
-      display.map(function(path) { return '<li style="margin-bottom: 2px;">' + path + '</li>'; }).join('') + 
-      '</ul>';
-    $('#scanpaths-summary').html(bulletList);
-  }
-
-  function openFolderDialog() {
-    $('#folder-overlay').show();
-    $.ajax({
-      url: "list-scan-folders.cgi",
-      method: "GET",
-      success: function(resp) {
-        if (resp && resp.success) {
-          availableScanFolders = (resp.folders || []).map(function(folder) {
-            return {
-              path: decodeURIComponent(folder.path),
-              depth: folder.depth
-            };
-          });
-          folderDialogExplicit = new Set(
-            (selectedScanPaths || [])
-              .map(function(p) {
-                if (p === '/scan' || p === '/scan/') return '';
-                if (p.indexOf('/scan/') === 0) return p.slice('/scan'.length);
-                return p;
-              })
-              .filter(function(p) { return p !== ''; })
-          );
-          renderFolderDialog();
-          $('#folder-overlay').show();
-        } else {
-          firework.launch('Failed to list scan folders', 'danger', 3000);
-        }
-      },
-      error: function(xhr, status, error) {
-        firework.launch('Failed to list scan folders: ' + error, 'danger', 3000);
-      }
-    });
-  }
-
-  function closeFolderDialog() {
-    $('#folder-overlay').hide();
-  }
-
-  function clearFolderFilter() {
-    $('#folder-filter').val('');
-    folderFilter = '';
-    renderFolderDialog();
-  }
-
-  function hasSelectedAncestor(path, explicitSet) {
-    for (const a of explicitSet) {
-      if (a === path) {
-        continue;
-      }
-      if (path.indexOf(a + '/') === 0) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  function renderFolderDialog() {
-    var list = $('#folder-list');
-    list.empty();
-
-    $('#folder-filter').off('input').on('input', function() {
-      folderFilter = ($(this).val() || '').toLowerCase();
-      renderFolderDialog();
-    });
-
-    if (!availableScanFolders || availableScanFolders.length === 0) {
-      list.html('<div class="no-folders-text">No folders found under /scan.</div>');
-      return;
-    }
-
-    var selection = computeFolderDialogSelection(folderDialogExplicit);
-
-    availableScanFolders.forEach(function(entry) {
-      var rel = entry.path;
-      var depth = entry.depth || 0;
-      var abs = rel;
-      var displayAbs = rel;
-
-      // Skip subfolders if their parent is already selected
-      if (hasSelectedAncestor(abs, folderDialogExplicit)) {
-        return;
-      }
-
-      if (folderFilter) {
-        if (displayAbs.toLowerCase().indexOf(folderFilter) === -1) {
-          return;
-        }
-      }
-
-      var checked = selection.has(abs);
-      var disabled = hasSelectedAncestor(abs, folderDialogExplicit);
-      var item = $('<div class="folder-item"></div>');
-      var pad = 8 + (Math.min(depth, 10) * 14);
-
-      item.html(
-        '<label class="folder-label folder-label-padding" style="padding-left:' + (pad - 8) + 'px;">' +
-          '<input type="checkbox" class="scan-folder-cb" value="' + abs + '" ' + (checked ? 'checked' : '') + ' ' + (disabled ? 'disabled' : '') + '>' +
-          '<span class="folder-name">' + displayAbs + '</span>' +
-        '</label>'
-      );
-      list.append(item);
-    });
-
-    $('#folder-list .scan-folder-cb').off('change').on('change', function() {
-      var cb = $(this);
-      if (cb.prop('disabled')) {
-        return;
-      }
-      var p = cb.val();
-      if (cb.prop('checked')) {
-        folderDialogExplicit.add(p);
-        // Remove any subfolders that are explicitly selected when parent is selected
-        var toRemove = [];
-        folderDialogExplicit.forEach(function(path) {
-          if (path !== p && path.indexOf(p + '/') === 0) {
-            toRemove.push(path);
-          }
-        });
-        toRemove.forEach(function(path) {
-          folderDialogExplicit.delete(path);
-        });
-      } else {
-        folderDialogExplicit.delete(p);
-      }
-      renderFolderDialog();
-    });
-  }
-
-  function computeFolderDialogSelection(explicitSet) {
-    var selection = new Set(explicitSet);
-    (availableScanFolders || []).forEach(function(entry) {
-      var rel = entry.path;
-      var abs = rel;
-      for (const a of explicitSet) {
-        if (abs.indexOf(a + '/') === 0) {
-          selection.add(abs);
-          break;
-        }
-      }
-    });
-    return selection;
-  }
-
-  function saveFolderSelection() {
-    // Only send explicitly selected folders, not the disabled subfolders
-    var paths = Array.from(folderDialogExplicit);
-
-    if (paths.length === 0) {
-      paths = ['/'];
-    }
-
-    // Ensure paths are properly formatted
-    var absolutePaths = paths.map(function(p) {
-      if (p === '/' || p === '') return '/scan';
-      // Ensure path starts with a single slash
-      return '/scan' + (p.startsWith('/') ? '' : '/') + p;
-    });
-
-    // Prepare the request data
-    var requestData = { paths: paths };
-    
-    // Send the request
-    $.ajax({
-      url: "set-scan-paths.cgi",
-      method: "POST",
-      dataType: 'json',
-      contentType: 'application/json; charset=utf-8',
-      data: JSON.stringify(requestData),
-      success: function(resp) {
-        if (resp && resp.success) {
-          selectedScanPaths = absolutePaths;
-          updateScanPathsSummary();
-          firework.launch('Scan folders updated', 'success', 3000);
-          closeFolderDialog();
-        } else {
-          firework.launch('Failed to update scan folders: ' + (resp && resp.error ? resp.error : 'unknown error'), 'danger', 3000);
-        }
-      },
-      error: function(xhr, status, error) {
-        firework.launch('Failed to update scan folders: ' + error, 'danger', 3000);
-      }
-    });
-  }
-
-  function saveCleanedScanPaths(paths) {
-    // Convert to relative paths for saving (remove /scan prefix)
-    var relativePaths = paths.map(function(p) {
-      if (p === '/scan' || p === '/scan/') return '';
-      if (p.startsWith('/scan/')) return p.substring(6); // Remove '/scan/' prefix
-      return p;
-    });
-    
-    // Save the cleaned paths
-    $.ajax({
-      url: "set-scan-paths.cgi",
-      method: "POST",
-      dataType: 'json',
-      contentType: 'application/json; charset=utf-8',
-      data: JSON.stringify({ paths: relativePaths }),
-      success: function(resp) {
-        if (resp && resp.success) {
-          // Paths saved successfully
-        } else {
-          console.error('Failed to save cleaned scan paths:', resp && resp.error ? resp.error : 'unknown error');
-        }
-      },
-      error: function(xhr, status, error) {
-        console.error('Failed to save cleaned scan paths:', error);
-      }
-    });
-  }
-
-  // Exclude Patterns Functions
-  function loadExclude() {
-    $.ajax({
-      url: "get-exclude.cgi",
-      method: "GET",
-      success: function(resp) {
-        if (resp && resp.success) {
-          $('#exclude-input').val(resp.exclude || '');
-        } else {
-          firework.launch('Failed to load exclude patterns', 'danger', 3000);
-        }
-      },
-      error: function(xhr, status, error) {
-        firework.launch('Failed to load exclude patterns: ' + error, 'danger', 3000);
-      }
-    });
-  }
-
-  function confirmSaveExclude() {
-    var exclude = ($('#exclude-input').val() || '').trim();
-    showModal(
-      'Update Exclude Patterns',
-      'Save exclude patterns?<br><br><strong>' + exclude + '</strong><br><br>This affects scheduled and manual scans.',
-      'primary',
-      saveExclude,
-      exclude
-    );
-  }
-
-  function saveExclude(exclude) {
-    $.ajax({
-      url: "set-exclude.cgi",
-      method: "POST",
-      data: { exclude: exclude },
-      success: function(resp) {
-        if (resp && resp.success) {
-          firework.launch('Exclude patterns updated', 'success', 3000);
-          $('#exclude-input').val(resp.exclude || exclude);
-        } else {
-          firework.launch('Failed to update exclude patterns: ' + (resp && resp.error ? resp.error : 'unknown error'), 'danger', 3000);
-        }
-      },
-      error: function(xhr, status, error) {
-        firework.launch('Failed to update exclude patterns: ' + error, 'danger', 3000);
-      }
-    });
-  }
-
-  // Schedule Functions
-  function loadSchedule() {
-    $.ajax({
-      url: "get-schedule.cgi",
-      method: "GET",
-      success: function(resp) {
-        if (resp && resp.success) {
-          if (resp.supported) {
-            $('#schedule-unsupported').hide();
-            $('#schedule-mode').val(resp.mode);
-            $('#schedule-minute').val(resp.minute);
-            $('#schedule-hour').val(resp.hour);
-            $('#schedule-dow').val(resp.dow);
-            $('#schedule-dom').val(resp.dom);
-          } else {
-            $('#schedule-unsupported').show();
-          }
-          updateScheduleFieldsVisibility();
-          updateSchedulePreview();
-        } else {
-          firework.launch('Failed to load schedule', 'danger', 3000);
-        }
-      },
-      error: function(xhr, status, error) {
-        firework.launch('Failed to load schedule: ' + error, 'danger', 3000);
-      }
-    });
-  }
-
-  function bindScheduleUI() {
-    $('#schedule-mode').on('change', function() {
-      updateScheduleFieldsVisibility();
-      updateSchedulePreview();
-    });
-    $('#schedule-minute, #schedule-hour, #schedule-dom').on('input', updateSchedulePreview);
-    $('#schedule-dow').on('change', updateSchedulePreview);
-    updateScheduleFieldsVisibility();
-    updateSchedulePreview();
-  }
-
-  function updateScheduleFieldsVisibility() {
-    var mode = $('#schedule-mode').val();
-    var showHour = (mode === 'daily' || mode === 'weekly' || mode === 'monthly');
-    var showDow = (mode === 'weekly');
-    var showDom = (mode === 'monthly');
-
-    $('#schedule-hour').prop('disabled', !showHour);
-    $('#schedule-dow').prop('disabled', !showDow);
-    $('#schedule-dom').prop('disabled', !showDom);
-  }
-
-  function updateSchedulePreview() {
-    var mode = $('#schedule-mode').val();
-    var minute = parseInt($('#schedule-minute').val() || '0', 10);
-    var hour = parseInt($('#schedule-hour').val() || '0', 10);
-    var dow = $('#schedule-dow').val();
-    var dom = parseInt($('#schedule-dom').val() || '1', 10);
-
-    var cron = '';
-    if (mode === 'hourly') {
-      cron = minute + ' * * * *';
-    } else if (mode === 'daily') {
-      cron = minute + ' ' + hour + ' * * *';
-    } else if (mode === 'weekly') {
-      cron = minute + ' ' + hour + ' * * ' + dow;
-    } else if (mode === 'monthly') {
-      cron = minute + ' ' + hour + ' ' + dom + ' * *';
-    }
-
-    $('#schedule-preview').text('Cron: ' + cron);
-    // Update button tooltip with current cron expression
-    $('button[onclick="confirmSaveSchedule()"]').attr('title', 'Cron configuration: ' + cron);
-  }
-
-  function confirmSaveSchedule() {
-    var mode = $('#schedule-mode').val();
-    var minute = parseInt($('#schedule-minute').val() || '0', 10);
-    var hour = parseInt($('#schedule-hour').val() || '0', 10);
-    var dow = parseInt($('#schedule-dow').val() || '1', 10);
-    var dom = parseInt($('#schedule-dom').val() || '1', 10);
-
-    if (isNaN(minute) || minute < 0 || minute > 59) {
-      showStatus('Minute must be between 0 and 59', 'error');
-      return;
-    }
-    if ((mode === 'daily' || mode === 'weekly' || mode === 'monthly') && (isNaN(hour) || hour < 0 || hour > 23)) {
-      showStatus('Hour must be between 0 and 23', 'error');
-      return;
-    }
-    if (mode === 'weekly' && (isNaN(dow) || dow < 0 || dow > 6)) {
-      showStatus('Day of week must be between 0 and 6', 'error');
-      return;
-    }
-    if (mode === 'monthly' && (isNaN(dom) || dom < 1 || dom > 31)) {
-      showStatus('Day of month must be between 1 and 31', 'error');
-      return;
-    }
-
-    // Generate cron expression and human readable text
-    var cron = '';
-    var humanReadable = '';
-    
-    if (mode === 'hourly') {
-      cron = minute + ' * * * *';
-      humanReadable = 'Every hour at minute ' + minute;
-    } else if (mode === 'daily') {
-      cron = minute + ' ' + hour + ' * * *';
-      humanReadable = 'Every day at ' + hour.toString().padStart(2, '0') + ':' + minute.toString().padStart(2, '0');
-    } else if (mode === 'weekly') {
-      cron = minute + ' ' + hour + ' * * ' + dow;
-      var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-      humanReadable = 'Every ' + days[dow] + ' at ' + hour.toString().padStart(2, '0') + ':' + minute.toString().padStart(2, '0');
-    } else if (mode === 'monthly') {
-      cron = minute + ' ' + hour + ' ' + dom + ' * *';
-      humanReadable = 'Every month on day ' + dom + ' at ' + hour.toString().padStart(2, '0') + ':' + minute.toString().padStart(2, '0');
-    }
-    
-    var displayText = humanReadable + '<br><small>(Cron configuration: ' + cron + ')</small>';
-    
-    showModal(
-      'Update Schedule',
-      'Save the new schedule?<br><br><strong>' + displayText + '</strong><br><br>This controls when automatic scans run.',
-      'primary',
-      saveSchedule,
-      { mode: mode, minute: minute, hour: hour, dow: dow, dom: dom, preview: cron }
-    );
-  }
-
-  function saveSchedule(payload) {
-    $.ajax({
-      url: "set-schedule.cgi",
-      method: "POST",
-      data: {
-        mode: payload.mode,
-        minute: payload.minute,
-        hour: payload.hour,
-        dow: payload.dow,
-        dom: payload.dom
-      },
-      success: function(resp) {
-        if (resp && resp.success) {
-          firework.launch('Schedule updated', 'success', 3000);
-          $('#schedule-unsupported').hide();
-          $('#schedule-preview').text('Cron: ' + (resp.schedule || payload.preview));
-    // Update button tooltip with saved cron expression
-    $('button[onclick="confirmSaveSchedule()"]').attr('title', 'Current schedule: ' + (resp.schedule || payload.preview));
-        } else {
-          firework.launch('Failed to update schedule: ' + (resp && resp.error ? resp.error : 'unknown error'), 'danger', 3000);
-        }
-      },
-      error: function(xhr, status, error) {
-        firework.launch('Failed to update schedule: ' + error, 'danger', 3000);
-      }
-    });
-  }
-
-  // Modal Functions
-  function showModal(title, message, type, onConfirm, data) {
-    pendingAction = onConfirm;
-    pendingData = data;
-    $('#modal-title').text(title);
-    $('#modal-message').html(message);
-    $('#modal-header').removeClass('danger primary').addClass(type);
-    $('#modal-confirm-btn').removeClass('btn-danger btn-primary').addClass(type === 'danger' ? 'btn-danger' : 'btn-primary');
-    $('#modal-overlay').show();
-  }
-
-  function closeModal() {
-    $('#modal-overlay').hide();
-    pendingAction = null;
-    pendingData = null;
-  }
-
-  function modalConfirm() {
-    if (pendingAction) {
-      pendingAction(pendingData);
-    }
-    closeModal();
-  }
-</script>
+<script src="jquery.min.js"></script>
+<link type="text/css" rel="stylesheet" href="jquery.firework.css">
+<script type="text/javascript" src="jquery.firework.js"></script>
+<script src="script.js"></script>
 
 </body>
 </html>

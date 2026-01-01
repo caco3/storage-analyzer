@@ -1,17 +1,12 @@
-<script type="text/javascript">
+<script src="jquery.min.js"></script>
+<link type="text/css" rel="stylesheet" href="jquery.firework.css">
+<script type="text/javascript" src="jquery.firework.js"></script>
+<script src="script.js"></script>
+
+<script>
   $(document).ready(function() {
-      /* Check if the db parameter is provided in the URL and use it */
-      const queryString = window.location.search;
-      const urlParams = new URLSearchParams(queryString);
-      var db = "";
-      if (urlParams.has('db')) {
-          db = urlParams.get('db');
-          console.log("DB: " + db);
-          //db = db.replace("/snapshots", "");
-      }
-      
-      document.getElementById("db_error").innerHTML = db;
-  })
+    handleDbError();
+  });
 </script>
 
 <div id=error>

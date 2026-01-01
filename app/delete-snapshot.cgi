@@ -2,7 +2,8 @@
 
 set -euo pipefail
 
-DB_FOLDER="/snapshots"
+# Source environment variables
+source "/env.sh"
 
 echo "Content-type: application/json"
 echo ""
@@ -11,22 +12,22 @@ echo ""
 read -r POST_DATA || true
 
 # Extract db parameter (URL encoded)
-DB_PATH=$(echo "$POST_DATA" | sed 's/.*db=\([^&]*\).*/\1/' | sed 's/%2F/\//g' | sed 's/+/ /g')
+SNAPSHOT_PATH=$(echo "$POST_DATA" | sed 's/.*db=\([^&]*\).*/\1/' | sed 's/%2F/\//g' | sed 's/+/ /g')
 
 # Validate the path
-if [[ -z "$DB_PATH" ]]; then
+if [[ -z "$SNAPSHOT_PATH" ]]; then
     echo '{"success": false, "error": "No snapshot specified"}'
     exit 0
 fi
 
-# Security: ensure path is within DB_FOLDER and is a .db file
-if [[ "$DB_PATH" != "$DB_FOLDER/duc_"* ]] || [[ "$DB_PATH" != *".db" ]]; then
+# Security: ensure path is within SNAPSHOTS_FOLDER and is a .db file
+if [[ "$SNAPSHOT_PATH" != "$SNAPSHOTS_FOLDER/duc_"* ]] || [[ "$SNAPSHOT_PATH" != *".db" ]]; then
     echo '{"success": false, "error": "Invalid snapshot path"}'
     exit 0
 fi
 
 # The actual file is .db.zst (compressed)
-ZST_FILE="${DB_PATH}.zst"
+ZST_FILE="${SNAPSHOT_PATH}.zst"
 
 if [[ ! -f "$ZST_FILE" ]]; then
     echo '{"success": false, "error": "Snapshot not found"}'
