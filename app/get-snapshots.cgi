@@ -5,6 +5,14 @@
 # Source environment variables
 source "/env.sh"
 
+# Check scan status
+scan_status="idle"
+if [ -d "$LOCK_DIR" ]; then
+    scan_status="in_progress"
+elif [ -d "$REQUEST_DIR" ]; then
+    scan_status="requested"
+fi
+
 echo "Content-type: application/json"
 echo ""
 
@@ -21,4 +29,4 @@ for f in `ls -c1 $SNAPSHOTS_FOLDER/duc_*.db.zst | sort`; do
     file_size=$(stat -c%s "$f.zst" 2>/dev/null || echo 0)
     echo "{\"name\": \"$f\", \"size\": $size, \"db-size\": $file_size},"
 done
-echo "null ]}"
+echo "null ], "\"scan_status\"": "\"$scan_status\""}"

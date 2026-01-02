@@ -90,6 +90,84 @@ function parseDbName(name) {
   };
 }
 
+// Scan status monitoring
+var scanStatusInterval = null;
+
+function startScanStatusMonitoring() {
+  // Clear any existing interval
+  if (scanStatusInterval) {
+    clearInterval(scanStatusInterval);
+  }
+  
+  // Check scan status every 3 seconds
+  scanStatusInterval = setInterval(function() {
+    $.ajax('get-snapshots.cgi', {
+      success: function(data) {
+        var oldStatus = window.scanStatus;
+        window.scanStatus = data.scan_status || 'idle';
+        
+        // Update snapshots list if status changed or new snapshots available
+        if (oldStatus !== window.scanStatus || data.snapshots.length !== snapshots.length) {
+          // Update scan progress indicator
+          renderScanProgress();
+          
+          // Reload snapshots data
+          data.snapshots.pop();
+          snapshots = [];
+          
+          data.snapshots.forEach(function(item, i) {
+            var parsed = parseDbName(item.name);
+            var isSelected = item.name === db;
+            if (isSelected) selectedIndex = i;
+            
+            snapshots.push({
+              db: parsed.db,
+              title: parsed.title,
+              selected: isSelected,
+              size: item.size
+            });
+          });
+          
+          renderSnapshots();
+          
+          // Stop monitoring if scan is complete
+          if (window.scanStatus === 'idle') {
+            clearInterval(scanStatusInterval);
+            scanStatusInterval = null;
+            firework.launch('Scan completed!', 'success', 3000);
+          }
+        }
+      },
+      error: function() {
+        // Don't show error for monitoring failures
+      }
+    });
+  }, 3000);
+}
+
+function stopScanStatusMonitoring() {
+  if (scanStatusInterval) {
+    clearInterval(scanStatusInterval);
+    scanStatusInterval = null;
+  }
+}
+
+// Scan progress rendering
+function renderScanProgress() {
+  var container = $('#scan-progress-container');
+  container.empty();
+  
+  if (window.scanStatus && window.scanStatus !== 'idle') {
+    var progressClass = window.scanStatus === 'in_progress' ? 'in-progress' : 'requested';
+    var progressText = window.scanStatus === 'in_progress' ? 'Scan in progress...' : 'Scan requested...';
+    var progressHtml = '<div class="scan-progress ' + progressClass + '" style="cursor: pointer;" onclick="window.location.href=\'show-log.cgi\'">' +
+                      '<div class="scan-progress-icon"></div>' +
+                      '<div class="scan-progress-text">' + progressText + '</div>' +
+                      '</div>';
+    container.html(progressHtml);
+  }
+}
+
 // Header functions (main page)
 function renderSnapshots() {
   var list = $('#snapshots_list');
@@ -657,6 +735,12 @@ $(document).ready(function() {
       success: function(data) {
         data.snapshots.pop();
 
+        // Store scan status globally
+        window.scanStatus = data.scan_status || 'idle';
+
+        // Render scan progress indicator
+        renderScanProgress();
+
         if (data.snapshots.length === 0) {
           snapshots = [];
           db = null;
@@ -689,6 +773,11 @@ $(document).ready(function() {
         if (db) {
           renderSnapshots();
           renderBreadcrumb();
+        }
+
+        // Set up auto-refresh if scan is in progress
+        if (window.scanStatus === 'in_progress' || window.scanStatus === 'requested') {
+          startScanStatusMonitoring();
         }
       },
       error: function(xhr, status, error) {
