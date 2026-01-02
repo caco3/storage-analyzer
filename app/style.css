@@ -270,18 +270,18 @@ ul {
 
 /* Force trend indicator backgrounds in selected snapshots */
 #snapshots_list .selected_snapshot .trend-up {
-  background: rgba(211, 47, 47, 0.8) !important;
-  color: #000000 !important;
+  background: rgba(211, 47, 47, 0.5) !important;
+  color: #ffffff !important;
 }
 
 #snapshots_list .selected_snapshot .trend-down {
   background: rgba(46, 125, 50, 0.8) !important;
-  color: #000000 !important;
+  color: #ffffff !important;
 }
 
 #snapshots_list .selected_snapshot .trend-same {
   background: rgba(102, 102, 102, 0.8) !important;
-  color: #000000 !important;
+  color: #ffffff !important;
 }
 
 /* Path Breadcrumb */
