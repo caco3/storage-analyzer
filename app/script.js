@@ -841,6 +841,15 @@ $(document).ready(function() {
     const logDisplay = document.getElementById('log-display');
     if (logDisplay) {
       logDisplay.innerHTML = convertLogUtcToLocal(logDisplay.innerHTML);
+      
+      // Restore scroll position after page load
+      setTimeout(() => restoreScrollPosition(), 200);
+      
+      // Save scroll position on scroll
+      logDisplay.addEventListener('scroll', saveScrollPosition);
+      
+      // Save position before page unload
+      window.addEventListener('beforeunload', saveScrollPosition);
     }
     // Start auto-reload
     setInterval(reloadLog, 1000);
@@ -1002,11 +1011,58 @@ function convertLogUtcToLocal(logContent) {
 }
 
 function reloadLog() {
+  const logDisplay = document.getElementById('log-display');
+  const wasAtBottom = isScrolledToBottom(logDisplay);
+  
   fetch('show-log.cgi?content=only')
     .then(response => response.text())
     .then(data => {
       const localData = convertLogUtcToLocal(data);
-      document.getElementById('log-display').innerHTML = localData;
+      logDisplay.innerHTML = localData;
+      
+      // Auto-scroll to bottom if user was at bottom
+      if (wasAtBottom) {
+        scrollToBottom(logDisplay);
+      }
     })
     .catch(error => console.error('Error reloading log:', error));
+}
+
+function isScrolledToBottom(element) {
+  // Allow 5px tolerance for "at bottom"
+  return Math.abs(element.scrollHeight - element.scrollTop - element.clientHeight) <= 5;
+}
+
+function scrollToBottom(element) {
+  element.scrollTop = element.scrollHeight;
+}
+
+function saveScrollPosition() {
+  const logDisplay = document.getElementById('log-display');
+  if (logDisplay) {
+    sessionStorage.setItem('logScrollPosition', logDisplay.scrollTop.toString());
+    sessionStorage.setItem('logWasAtBottom', isScrolledToBottom(logDisplay).toString());
+  }
+}
+
+function restoreScrollPosition() {
+  const logDisplay = document.getElementById('log-display');
+  if (logDisplay) {
+    const wasAtBottom = sessionStorage.getItem('logWasAtBottom') === 'true';
+    
+    if (wasAtBottom) {
+      // If user was at bottom, scroll to bottom after content loads
+      setTimeout(() => scrollToBottom(logDisplay), 100);
+    } else {
+      // Restore previous scroll position
+      const scrollPosition = sessionStorage.getItem('logScrollPosition');
+      if (scrollPosition) {
+        logDisplay.scrollTop = parseInt(scrollPosition);
+      }
+    }
+    
+    // Clear saved position
+    sessionStorage.removeItem('logScrollPosition');
+    sessionStorage.removeItem('logWasAtBottom');
+  }
 }
