@@ -859,8 +859,6 @@ $(document).ready(function() {
 // Trend page functions
 function initializeTrendPage() {
   loadTrendData();
-  
-  $('#refresh-trend').click(loadTrendData);
   $('#trend-period').change(loadTrendData);
 }
 
