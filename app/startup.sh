@@ -10,6 +10,9 @@ mkdir -p "$CONFIG_DIR"
 mkdir -p "$SNAPSHOTS_FOLDER"
 mkdir -p "$SNAPSHOTS_FOLDER_TEMP"
 
+# Delete LOCK_DIR on startup to remove stale lock files
+rm -rf "$LOCK_DIR"
+
 touch "$LOG_FILE"
 
 if [[ -f "$SCHEDULE_FILE" ]]; then
