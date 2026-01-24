@@ -127,8 +127,8 @@ fi
 zstd -d "$DB.zst" -o "$DB"
 
 # Check if database format is supported
-DB_ERROR=$(duc info --database="$DB" 2>&1 || true)
-if echo "$DB_ERROR" | grep -q "unsupported DB type"; then
+DUC_INFO_RESPONSE=$(duc info --database="$DB" 2>&1 || true)
+if echo "$DUC_INFO_RESPONSE" | grep -q "unsupported DB type"; then
     echo "Content-type: text/html"; echo
     cat <<EOF
 <!DOCTYPE html>
@@ -156,8 +156,11 @@ EOF
     cat footer.htm
     echo "</body></html>"
     exit 0
-# Another error occured
-elif [ -n "$DB_ERROR" ]; then
+
+elif echo "$DUC_INFO_RESPONSE" | grep -q "Date"; then # no error
+    exec duc cgi --database=$DB --dpi=120 --size=600 --list --levels 1 --gradient --header header.htm --footer footer.htm --css-url style.css --db-error db-error.cgi --path-error path-error.cgi
+
+else # Another error occured
     echo "Content-type: text/html"; echo
     cat <<EOF
 <!DOCTYPE html>
@@ -173,7 +176,7 @@ EOF
       <div class="error_message">
         <h2 class="error">Database access error</h2>
         <p>Unable to access the snapshot database.</p>
-        <p><strong>Error details:</strong> <code>$DB_ERROR</code></p>
+        <p><strong>Error details:</strong> <code>$DUC_INFO_RESPONSE</code></p>
         <p>You have following options:</p>
         <ul>
           <li>&nbsp;&nbsp;- <a href="manage-snapshots.cgi">Delete the corrupted snapshot</a> and create a new one</li>
@@ -185,5 +188,3 @@ EOF
     echo "</body></html>"
     exit 0
 fi
-
-exec duc cgi --database=$DB --dpi=120 --size=600 --list --levels 1 --gradient --header header.htm --footer footer.htm --css-url style.css --db-error db-error.cgi --path-error path-error.cgi
