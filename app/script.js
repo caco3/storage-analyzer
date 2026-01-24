@@ -1054,6 +1054,23 @@ function reloadLog() {
       }
     })
     .catch(error => console.error('Error reloading log:', error));
+    
+  // Also refresh the progress display by fetching the full page
+  fetch('show-log.cgi')
+    .then(response => response.text())
+    .then(html => {
+      // Extract the progress display from the full HTML
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const newProgressDisplay = doc.getElementById('progress-display');
+      const existingProgressDisplay = document.getElementById('progress-display');
+      
+      if (newProgressDisplay && existingProgressDisplay) {
+        // Update existing progress display content
+        existingProgressDisplay.innerHTML = newProgressDisplay.innerHTML;
+      }
+    })
+    .catch(error => console.error('Error reloading progress:', error));
 }
 
 function isScrolledToBottom(element) {
