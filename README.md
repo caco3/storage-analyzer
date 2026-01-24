@@ -89,6 +89,7 @@ docker run \
 
 ## Development
 ```bash
+sudo docker compose create --build
 sudo docker run -it -p 8080:80 --mount type=bind,src=$PWD,dst=/scan,readonly -v $PWD/snapshots:/snapshots -v $PWD/app:/var/www/html --name storage-analyzer $(docker build -q .)
 sudo docker stop storage-analyzer; sudo docker rm storage-analyzer
 ```
