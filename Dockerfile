@@ -1,4 +1,5 @@
 ARG UBUNTU_VERSION=24.04
+ARG DUC_VERSION=1.4.6
 
 ####################################
 # Temporary image for building Duc #
@@ -6,7 +7,7 @@ ARG UBUNTU_VERSION=24.04
 
 FROM ubuntu:${UBUNTU_VERSION} AS build
 
-ARG DUC_VERSION=1.4.6
+ARG DUC_VERSION
 
 RUN apt-get update -qq \
  && apt-get install -y -qq --no-install-recommends \
@@ -43,6 +44,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ARG BUILD_DATE
 ARG VCS_REF
+ARG DUC_VERSION
 LABEL maintainer="George Ruinelli <caco3@ruinelli.ch>" \
       org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vcs-url="https://github.com/caco3/storage-analyzer.git" \
@@ -82,6 +84,7 @@ COPY app/scan.sh /scan.sh
 COPY app/env.sh /env.sh
 COPY app/manual_scan.sh /manual_scan.sh
 
+RUN sed -i "s/#DUC_VERSION#/${DUC_VERSION}/g" /var/www/html/show-help.htm
 
 RUN chmod +x /var/www/html/*.cgi \
  && chmod +x /startup.sh /scan.sh /manual_scan.sh

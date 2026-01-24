@@ -837,6 +837,7 @@ hr {
 .log-display {
   border: 1px solid black;
   background: white;
+  border-radius: 4px;
   padding: 10px;
   font-family: monospace;
   font-size: 12px;
@@ -848,7 +849,54 @@ hr {
   overflow-y: auto;
   overflow-x: hidden;
   line-height: 1.3;
-  height: 100%;
+  height: calc(100vh - 250px);
+  margin: 10px 0;
+}
+
+/* Progress display styles */
+.progress-display {
+  border: 1px solid black;
+  background: white;
+  padding: 10px;
+  border-radius: 4px;
+  margin: 10px 0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: block;
+}
+
+/* Header frame styles */
+#content2 > :first-child {
+  border: 1px solid black;
+  background: white;
+  padding: 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin: 10px 0;
+}
+
+.progress-display h3 {
+  margin: 0 0 8px 0;
+  color: #006680;
+  font-size: 14px;
+}
+
+.progress-line {
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: bold;
+  color: #006680;
+}
+
+.progress-ongoing {
+  color: #ff8c00; /* Orange */
+}
+
+.progress-completed {
+  color: #28a745; /* Green */
+}
+
+.progress-idle {
+  color: #6c757d; /* Gray */
 }
 
 /* Buttons */

@@ -517,13 +517,30 @@ function bindScheduleUI() {
 
 function updateScheduleFieldsVisibility() {
   var mode = $('#schedule-mode').val();
+  var showFields = (mode !== 'disabled');
+  var showMinute = (mode !== 'disabled');
   var showHour = (mode === 'daily' || mode === 'weekly' || mode === 'monthly');
   var showDow = (mode === 'weekly');
   var showDom = (mode === 'monthly');
 
-  $('#schedule-hour').prop('disabled', !showHour);
-  $('#schedule-dow').prop('disabled', !showDow);
-  $('#schedule-dom').prop('disabled', !showDom);
+  // Hide/show individual label and input pairs
+  $('label[for="schedule-minute"]').toggle(showMinute && showFields);
+  $('#schedule-minute').toggle(showMinute && showFields);
+  
+  $('label[for="schedule-hour"]').toggle(showHour && showFields);
+  $('#schedule-hour').toggle(showHour && showFields);
+  
+  $('label[for="schedule-dow"]').toggle(showDow && showFields);
+  $('#schedule-dow').toggle(showDow && showFields);
+  
+  $('label[for="schedule-dom"]').toggle(showDom && showFields);
+  $('#schedule-dom').toggle(showDom && showFields);
+  
+  // Also disable the fields when hidden
+  $('#schedule-minute').prop('disabled', !(showMinute && showFields));
+  $('#schedule-hour').prop('disabled', !(showHour && showFields));
+  $('#schedule-dow').prop('disabled', !(showDow && showFields));
+  $('#schedule-dom').prop('disabled', !(showDom && showFields));
 }
 
 function updateSchedulePreview() {
@@ -537,7 +554,9 @@ function updateSchedulePreview() {
   var utcHour = convertLocalToUtcHour(localHour);
 
   var cron = '';
-  if (mode === 'hourly') {
+  if (mode === 'disabled') {
+    cron = 'Disabled';
+  } else if (mode === 'hourly') {
     cron = minute + ' * * * *';
   } else if (mode === 'daily') {
     cron = minute + ' ' + utcHour + ' * * *';
@@ -559,6 +578,17 @@ function confirmSaveSchedule() {
   var localHour = parseInt($('#schedule-hour').val() || '0', 10);
   var dow = parseInt($('#schedule-dow').val() || '1', 10);
   var dom = parseInt($('#schedule-dom').val() || '1', 10);
+
+  if (mode === 'disabled') {
+    showModal(
+      'Disable Schedule',
+      'Are you sure you want to disable automatic scanning? No scheduled scans will be performed.<br><br>You can still trigger manual scans from the main page.',
+      'primary',
+      saveSchedule,
+      { mode: mode, minute: 0, hour: 0, dow: 0, dom: 0, preview: 'disabled' }
+    );
+    return;
+  }
 
   if (isNaN(minute) || minute < 0 || minute > 59) {
     showStatus('Minute must be between 0 and 59', 'error');
@@ -603,7 +633,7 @@ function confirmSaveSchedule() {
   
   showModal(
     'Update Schedule',
-    'Save the new schedule?<br><br><strong>' + displayText + '</strong><br><br>This controls when automatic scans run.',
+    'Save the new schedule?<br>This controls when automatic scans run.<br><br><strong>' + displayText + '</strong>',
     'primary',
     saveSchedule,
     { mode: mode, minute: minute, hour: utcHour, dow: dow, dom: dom, preview: cron }
@@ -1024,6 +1054,23 @@ function reloadLog() {
       }
     })
     .catch(error => console.error('Error reloading log:', error));
+    
+  // Also refresh the progress display by fetching the full page
+  fetch('show-log.cgi')
+    .then(response => response.text())
+    .then(html => {
+      // Extract the progress display from the full HTML
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, 'text/html');
+      const newProgressDisplay = doc.getElementById('progress-display');
+      const existingProgressDisplay = document.getElementById('progress-display');
+      
+      if (newProgressDisplay && existingProgressDisplay) {
+        // Update existing progress display content
+        existingProgressDisplay.innerHTML = newProgressDisplay.innerHTML;
+      }
+    })
+    .catch(error => console.error('Error reloading progress:', error));
 }
 
 function isScrolledToBottom(element) {

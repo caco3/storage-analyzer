@@ -16,7 +16,7 @@ EOF
 
 cat header.htm | sed 's/>Snapshot</>Help</'
 
-cat show-help.html
+cat show-help.htm
 
 cat footer.htm
 

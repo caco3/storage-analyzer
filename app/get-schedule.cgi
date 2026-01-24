@@ -27,8 +27,10 @@ if [[ -z "$schedule" ]] && [[ -f "$CRON_FILE" ]]; then
   schedule=$(echo "$raw_line" | awk '{print $1" "$2" "$3" "$4" "$5}')
 fi
 
-if [[ -z "$schedule" ]]; then
-  schedule="0 0 * * *"
+# Check if schedule is disabled (no scan.sh entry in cron)
+if [[ -z "$schedule" ]] || [[ "$schedule" == "disabled" ]]; then
+  echo "{\"success\": true, \"supported\": true, \"mode\": \"disabled\", \"minute\": 0, \"hour\": 0, \"dow\": 0, \"dom\": 0, \"schedule\": \"disabled\"}"
+  exit 0
 fi
 
 # Normalize any stray CRLF/newlines
