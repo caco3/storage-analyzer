@@ -57,6 +57,8 @@ if mkdir "$LOCK_DIR" 2>/dev/null; then
         DUC_ARGS+=("${SCAN_PATHS[@]}")
         DUC_ARGS+=("${EXCLUDE[@]}")
 
+        echo "$(date): $(/usr/local/bin/duc --version 2>/dev/null | paste -sd ', ' - | sed 's/,/, /g')"
+
         echo "$(date): Relevant DUC index parameters:"
         echo "$(date):   Paths: ${SCAN_PATHS[*]}"
         echo "$(date):   Database:  $SNAPSHOTS_FOLDER_TEMP/$SNAPSHOT_FILE"
@@ -64,8 +66,8 @@ if mkdir "$LOCK_DIR" 2>/dev/null; then
         echo "$(date):   Check Hard Links: $CHECK_HARD_LINKS"
         echo "$(date):   Max Depth: $MAX_DEPTH"
         echo "$(date): Full command: /usr/local/bin/duc index ${DUC_ARGS[*]}"
+
         /usr/local/bin/duc index "${DUC_ARGS[@]}"
-        # --exclude=Selektion --exclude=Speziell --exclude=roms
         status=$?
         echo "$(date): End of scan (exit code: $status)"
 
