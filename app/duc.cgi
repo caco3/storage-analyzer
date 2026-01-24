@@ -126,4 +126,65 @@ fi
 
 zstd -d "$DB.zst" -o "$DB"
 
-exec duc cgi --database=$DB --dpi=120 --size=600 --list --levels 1 --gradient --header header.htm --footer footer.htm --css-url style.css --db-error db-error.cgi --path-error path-error.cgi
+# Check if database format is supported
+DUC_INFO_RESPONSE=$(duc info --database="$DB" 2>&1 || true)
+if echo "$DUC_INFO_RESPONSE" | grep -q "unsupported DB type"; then
+    echo "Content-type: text/html"; echo
+    cat <<EOF
+<!DOCTYPE html>
+<head>
+  <title>Storage Analyzer</title>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+EOF
+    cat header.htm | sed 's/>Snapshot</>Database error</'
+    cat <<EOF
+      <div class="error_message">
+        <h2 class="error">Unsupported database format</h2>
+        <p>The snapshot database was created with an older version of the storage-analyzer (v1.x.x using DUC v1.4.x) that uses a different database format.</p>
+        <p>You have following options:</p>
+        <ul>
+          <li>&nbsp;&nbsp;- <a href="manage-snapshots.cgi">Delete all old snapshots</a> and start a new snapshot with the current version of the storage-analyzer</li>
+          <li>&nbsp;&nbsp;- Migrate your old snapshots manually to the new format using the converter at <a href="https://github.com/caco3/duc-database-converter" target="_blank">https://github.com/caco3/duc-database-converter</a></li>
+          <li>&nbsp;&nbsp;- Downgrade to a previous version of the storage-analyzer (v1.x.x) that supports DUC v1.4.x. Note that there will be no updates to that version.</li>
+        </ul>
+        <p><a href="duc.cgi">← Back to main page</a></p>
+      </div>
+EOF
+    cat footer.htm
+    echo "</body></html>"
+    exit 0
+
+elif echo "$DUC_INFO_RESPONSE" | grep -q "Date"; then # no error
+    exec duc cgi --database=$DB --dpi=120 --size=600 --list --levels 1 --gradient --header header.htm --footer footer.htm --css-url style.css --db-error db-error.cgi --path-error path-error.cgi
+
+else # Another error occured
+    echo "Content-type: text/html"; echo
+    cat <<EOF
+<!DOCTYPE html>
+<head>
+  <title>Storage Analyzer</title>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+EOF
+    cat header.htm | sed 's/>Snapshot</>Database error</'
+    cat <<EOF
+      <div class="error_message">
+        <h2 class="error">Database access error</h2>
+        <p>Unable to access the snapshot database.</p>
+        <p><strong>Error details:</strong> <code>$DUC_INFO_RESPONSE</code></p>
+        <p>You have following options:</p>
+        <ul>
+          <li>&nbsp;&nbsp;- <a href="manage-snapshots.cgi">Delete the corrupted snapshot</a> and create a new one</li>
+        </ul>
+        <p><a href="duc.cgi">← Back to main page</a></p>
+      </div>
+EOF
+    cat footer.htm
+    echo "</body></html>"
+    exit 0
+fi
