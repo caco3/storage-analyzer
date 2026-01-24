@@ -8,6 +8,8 @@ ARG DUC_VERSION=8926ce31034e57b8de92761a2aa789dfd5147959
 
 FROM ubuntu:${UBUNTU_VERSION} AS build
 
+ARG DUC_REPO_URL
+ARG DUC_VERSION
 
 RUN apt-get update -qq \
  && apt-get install -y -qq --no-install-recommends \
@@ -26,11 +28,13 @@ RUN apt-get update -qq \
         automake \
  && rm -rf /var/lib/apt/lists/*
 
-RUN git clone --branch ${DUC_VERSION} ${DUC_REPO_URL} duc-${DUC_VERSION}
+RUN git clone ${DUC_REPO_URL} duc && \
+        cd duc && \
+        git checkout ${DUC_VERSION}
 
 COPY patches/*.patch ./
 
-RUN cd duc-${DUC_VERSION} \
+RUN cd duc \
  && git apply ../*.patch \
  && autoreconf -fiv \
  && ./configure \
@@ -48,6 +52,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ARG BUILD_DATE
 ARG VCS_REF
+ARG DUC_REPO_URL
 ARG DUC_VERSION
 LABEL maintainer="George Ruinelli <caco3@ruinelli.ch>" \
       org.label-schema.build-date=$BUILD_DATE \
@@ -90,6 +95,7 @@ COPY app/env.sh /env.sh
 COPY app/manual_scan.sh /manual_scan.sh
 
 RUN sed -i "s/#DUC_VERSION#/${DUC_VERSION}/g" /var/www/html/show-help.htm
+RUN sed -i "s|#DUC_REPO_URL#|${DUC_REPO_URL}|g" /var/www/html/show-help.htm
 
 RUN chmod +x /var/www/html/*.cgi \
  && chmod +x /startup.sh /scan.sh /manual_scan.sh
