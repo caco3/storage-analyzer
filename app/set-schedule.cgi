@@ -52,6 +52,9 @@ fi
 
 schedule=""
 case "$mode" in
+  disabled)
+    schedule="disabled"
+    ;;
   hourly)
     validate_range "minute" "$minute" 0 59
     schedule="$minute * * * *"
@@ -85,8 +88,10 @@ echo "$schedule" > "$SCHEDULE_FILE" 2>/dev/null || true
   echo "# Auto-generated Duc cron tasks"
   echo "# Manual scan request poller"
   echo "* * * * * root /manual_scan.sh"
-  echo "# Scheduled full scan"
-  echo "$schedule root /scan.sh"
+  if [[ "$mode" != "disabled" ]]; then
+    echo "# Scheduled full scan"
+    echo "$schedule root /scan.sh"
+  fi
 } > "$CRON_FILE"
 chmod 0644 "$CRON_FILE"
 
