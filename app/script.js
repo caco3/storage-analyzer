@@ -294,7 +294,7 @@ function loadSnapshots() {
 function confirmDelete(dbPath, title) {
   showModal(
     'Delete Snapshot',
-    'Are you sure you want to delete the snapshot "' + title + '"? This action cannot be undone.',
+    'Are you sure you want to delete the following snapshot?<br><strong>' + title + '</strong><br><br>This action cannot be undone!',
     'danger',
     deleteSnapshot,
     dbPath
