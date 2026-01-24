@@ -3,6 +3,8 @@ name: CI/CD - Application with Docker
 on:
   push:
     branches: [main]
+    tags:
+      - 'v*'
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened]
@@ -37,6 +39,13 @@ jobs:
         run: |
           echo "REPO_NAME=${GITHUB_REPOSITORY##*/}" >> "$GITHUB_OUTPUT"
           echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            TAG_NAME=${GITHUB_REF#refs/tags/}
+            echo "TAG_NAME=$TAG_NAME" >> "$GITHUB_OUTPUT"
+            echo "IS_TAG=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "IS_TAG=false" >> "$GITHUB_OUTPUT"
+          fi
 
       # Set Version
       - name: Set Version
@@ -61,4 +70,5 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USER }}/${{ steps.meta.outputs.REPO_NAME }}:latest
             ${{ secrets.DOCKERHUB_USER }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.SHORT_SHA }}
+            ${{ steps.meta.outputs.IS_TAG == 'true' && format('{0}/{1}:{2}', secrets.DOCKERHUB_USER, steps.meta.outputs.REPO_NAME, steps.meta.outputs.TAG_NAME) || '' }}
           cache-from: type=local,src=/tmp/.buildx-cache
