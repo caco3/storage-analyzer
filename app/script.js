@@ -254,6 +254,7 @@ function loadSnapshots() {
     success: function(data) {
       if (Array.isArray(data.snapshots) && data.snapshots.length > 0 && data.snapshots[data.snapshots.length - 1] === null) {
         data.snapshots.pop(); // Remove trailing null
+        snapshots = [];
       }
       
       var tbody = $("#snapshots-body");
@@ -764,6 +765,7 @@ $(document).ready(function() {
     $.ajax('get-snapshots.cgi', {
       success: function(data) {
         data.snapshots.pop();
+        snapshots = [];
 
         // Store scan status globally
         window.scanStatus = data.scan_status || 'idle';
