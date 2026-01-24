@@ -1,5 +1,6 @@
 ARG UBUNTU_VERSION=24.04
-ARG DUC_VERSION=1.4.6
+ARG DUC_REPO_URL=https://github.com/caco3/duc.git
+ARG DUC_VERSION=8926ce31034e57b8de92761a2aa789dfd5147959
 
 ####################################
 # Temporary image for building Duc #
@@ -7,7 +8,6 @@ ARG DUC_VERSION=1.4.6
 
 FROM ubuntu:${UBUNTU_VERSION} AS build
 
-ARG DUC_VERSION
 
 RUN apt-get update -qq \
  && apt-get install -y -qq --no-install-recommends \
@@ -19,22 +19,26 @@ RUN apt-get update -qq \
         libcairo2-dev \
         libncursesw5-dev \
         libpango1.0-dev \
-        libtokyocabinet-dev \
+        libtkrzw-dev \
+        libarchive-dev \
         pkg-config \
+        autoconf \
+        automake \
  && rm -rf /var/lib/apt/lists/*
 
-ADD https://github.com/zevv/duc/releases/download/${DUC_VERSION}/duc-${DUC_VERSION}.tar.gz .
+RUN git clone --branch ${DUC_VERSION} ${DUC_REPO_URL} duc-${DUC_VERSION}
 
 COPY patches/*.patch ./
 
-RUN tar xzf duc-${DUC_VERSION}.tar.gz \
- && cd duc-${DUC_VERSION} \
+RUN cd duc-${DUC_VERSION} \
  && git apply ../*.patch \
+ && autoreconf -fiv \
  && ./configure \
  && make -j"$(nproc)" \
- && checkinstall --install=no --default \
- && cp duc_${DUC_VERSION}-*.deb /duc.deb
+ && checkinstall --install=no --default --pkgversion="1.5.0-rc2" --pkgname="duc" \
+ && cp duc_*.deb /duc.deb
 
+ 
 ###############################
 # Final image for running Duc #
 ###############################
@@ -62,7 +66,8 @@ RUN dpkg -i /duc.deb \
         libcairo2 \
         libpango-1.0 \
         libpangocairo-1.0-0 \
-        libtokyocabinet9 \
+        libtkrzw1 \
+        libarchive13 \
         nginx \
         zstd \
  && rm -rf /var/lib/apt/lists/* \
