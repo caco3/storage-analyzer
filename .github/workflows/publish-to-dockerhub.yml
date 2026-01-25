@@ -52,7 +52,7 @@ jobs:
       # Set Version
       - name: Set Version
         run: |
-          sed -i "s/#VERSION#/${{ steps.meta.outputs.SHORT_SHA }}/g" app/show-help.htm
+          sed -i "s/#VERSION#/${{ github.ref_name }}/g" app/show-help.htm
 
       # Login to Docker Hub
       - name: Log in to Docker Hub
