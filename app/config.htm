@@ -2,11 +2,12 @@
   <div class="actions-section">
     <h1>Exclude Patterns</h1>
     <div class="config-controls-small">
-      <input id="exclude-input" type="text" class="config-input" placeholder="proc sys dev run tmp">
+      <input id="exclude-input" type="text" class="config-input" placeholder="proc sys dev run tmp */usr/bin */var/log">
     </div>
     <div class="config-help-top">
-      Space- or comma-separated patterns. <br>Any file/folder containg such pattern will get excluded.<br>
-      See <a href="https://github.com/zevv/duc/issues/174#issuecomment-276108127">here</a> for more details.
+      Space- or comma-separated patterns. <br>Any file/folder containing such pattern will get excluded.<br>
+      <strong>NEW:</strong> Support for absolute paths (e.g., */usr/bin, */var/log).<br>
+      See <a href="duc.1.htm#CREATING-THE-INDEX">here</a> for more details.
     </div>
     <div class="config-controls">
     <button class="btn btn-primary config-button-left" onclick="confirmSaveExclude()">Save Patterns</button>

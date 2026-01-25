@@ -1,6 +1,6 @@
 ARG UBUNTU_VERSION=24.04
 ARG DUC_REPO_URL=https://github.com/caco3/duc.git
-ARG DUC_VERSION=8926ce31034e57b8de92761a2aa789dfd5147959
+ARG DUC_VERSION=c260e1a36c62291a68d37a3e2767dd84de302bc4
 
 ####################################
 # Temporary image for building Duc #
@@ -88,6 +88,7 @@ COPY app/*.ico /var/www/html/
 COPY app/*.htm /var/www/html/
 COPY app/*.css /var/www/html/
 COPY app/*.js /var/www/html/
+COPY --from=build /duc/doc/duc.1.htm /var/www/html/
 
 COPY app/startup.sh /startup.sh
 COPY app/scan.sh /scan.sh
