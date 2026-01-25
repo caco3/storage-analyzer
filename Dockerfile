@@ -88,7 +88,7 @@ COPY app/*.ico /var/www/html/
 COPY app/*.htm /var/www/html/
 COPY app/*.css /var/www/html/
 COPY app/*.js /var/www/html/
-COPY --from=build /duc/doc/duc.1.htm /var/www/html/
+COPY --from=build /duc/doc/duc.1.html /var/www/html/duc.1.htm
 
 COPY app/startup.sh /startup.sh
 COPY app/scan.sh /scan.sh
