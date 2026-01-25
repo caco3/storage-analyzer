@@ -54,7 +54,6 @@ ARG BUILD_DATE
 ARG VCS_REF
 ARG DUC_REPO_URL
 ARG DUC_VERSION
-ARG VERSION
 LABEL maintainer="George Ruinelli <caco3@ruinelli.ch>" \
       org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vcs-url="https://github.com/caco3/storage-analyzer.git" \
