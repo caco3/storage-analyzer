@@ -70,7 +70,7 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            ${{ secrets.DOCKERHUB_USER }}/${{ steps.meta.outputs.REPO_NAME }}:latest
             ${{ secrets.DOCKERHUB_USER }}/${{ steps.meta.outputs.REPO_NAME }}:${{ steps.meta.outputs.SHORT_SHA }}
             ${{ steps.meta.outputs.IS_TAG == 'true' && format('{0}/{1}:{2}', secrets.DOCKERHUB_USER, steps.meta.outputs.REPO_NAME, steps.meta.outputs.TAG_NAME) || '' }}
+            ${{ github.event_name == 'release' && format('{0}/{1}:latest', secrets.DOCKERHUB_USER, steps.meta.outputs.REPO_NAME) || '' }}
           cache-from: type=local,src=/tmp/.buildx-cache
