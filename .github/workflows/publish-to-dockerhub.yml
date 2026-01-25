@@ -8,6 +8,8 @@ on:
   pull_request:
     branches: [main]
     types: [opened, synchronize, reopened]
+  release:
+    types: [published]
 
 jobs:
   build-test-push:
