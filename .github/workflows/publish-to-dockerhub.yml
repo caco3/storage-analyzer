@@ -32,8 +32,28 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-buildx-
+          key: ${{ runner.os }}-buildx-${{ hashFiles('Dockerfile', 'patches/*.patch') }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+            ${{ runner.os }}-buildx-${{ hashFiles('Dockerfile') }}
+
+      # Cache DUC source and dependencies
+      - name: Cache DUC repository
+        uses: actions/cache@v4
+        with:
+          path: /tmp/duc-cache
+          key: ${{ runner.os }}-duc-c260e1a36c62291a68d37a3e2767dd84de302bc4
+          restore-keys: |
+            ${{ runner.os }}-duc-
+
+      # Cache apt packages
+      - name: Cache apt packages
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/apt
+          key: ${{ runner.os }}-apt-${{ hashFiles('Dockerfile') }}
+          restore-keys: |
+            ${{ runner.os }}-apt-
 
       # Extract metadata
       - name: Extract metadata
@@ -41,6 +61,7 @@ jobs:
         run: |
           echo "REPO_NAME=${GITHUB_REPOSITORY##*/}" >> "$GITHUB_OUTPUT"
           echo "SHORT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          echo "DUC_VERSION=c260e1a36c62291a68d37a3e2767dd84de302bc4" >> "$GITHUB_OUTPUT"
           if [[ $GITHUB_REF == refs/tags/* ]]; then
             TAG_NAME=${GITHUB_REF#refs/tags/}
             echo "TAG_NAME=$TAG_NAME" >> "$GITHUB_OUTPUT"
@@ -74,3 +95,6 @@ jobs:
             ${{ steps.meta.outputs.IS_TAG == 'true' && format('{0}/{1}:{2}', secrets.DOCKERHUB_USER, steps.meta.outputs.REPO_NAME, steps.meta.outputs.TAG_NAME) || '' }}
             ${{ github.event_name == 'release' && format('{0}/{1}:latest', secrets.DOCKERHUB_USER, steps.meta.outputs.REPO_NAME) || '' }}
           cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+          build-args: |
+            DUC_VERSION=${{ steps.meta.outputs.DUC_VERSION }}
