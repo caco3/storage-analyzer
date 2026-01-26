@@ -15,4 +15,17 @@ else
   exclude="$DEFAULT_EXCLUDE"
 fi
 
-echo "{\"success\": true, \"exclude\": \"$exclude\"}"
+# JSON escape the exclude patterns
+json_escape() {
+  local str="$1"
+  # Escape backslashes first, then quotes, then other special characters
+  str="${str//\\/\\\\}"  # Escape backslashes
+  str="${str//\"/\\\"}"  # Escape quotes
+  str="${str//$'\n'/\\n}" # Escape newlines
+  str="${str//$'\r'/\\r}" # Escape carriage returns
+  str="${str//$'\t'/\\t}" # Escape tabs
+  echo "$str"
+}
+
+escaped_exclude=$(json_escape "$exclude")
+echo "{\"success\": true, \"exclude\": \"$escaped_exclude\"}"
