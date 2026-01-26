@@ -455,6 +455,11 @@ hr {
   min-width: 320px;
 }
 
+#exclude-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .config-input-small {
   padding: 8px 10px;
   border: 1px solid #ddd;
