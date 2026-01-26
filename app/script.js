@@ -736,7 +736,7 @@ $(document).ready(function() {
   var pathname = url.pathname;
   
   // Header/main page initialization
-  if (pathname.includes('duc.cgi') || pathname.includes('/')) {
+  if (pathname.includes('duc.cgi') || pathname === '/') {
     var showSidebar = url.href.indexOf('duc.cgi') !== -1 || 
                       url.href.indexOf('/?db') !== -1 || 
                       url.href.indexOf('error.cgi') !== -1;
@@ -817,28 +817,37 @@ $(document).ready(function() {
         $('#snapshots').html('<p class="error">Failed to load snapshots</p>');
       }
     });
-
-    $(document).on('keypress', function(e) {
-      var key = e.key.toLowerCase();
-
-      if (snapshots.length === 0) {
-        if (key === 'n' || key === 'p') {
-          firework.launch('No snapshots available', 'warning', 2000);
-        }
-        return;
-      }
-      
-      if (key === 'p' && selectedIndex > 0) {
-        window.location.href = urlFromIndex(selectedIndex - 1);
-      } else if (key === 'p') {
-        firework.launch('Already at oldest snapshot', 'success', 1500);
-      } else if (key === 'n' && selectedIndex < snapshots.length - 1) {
-        window.location.href = urlFromIndex(selectedIndex + 1);
-      } else if (key === 'n') {
-        firework.launch('Already at latest snapshot', 'success', 1500);
-      }
-    });
   }
+  
+  // Global keyboard shortcuts - only n/p keys should work on main page
+  $(document).on('keypress', function(e) {
+    var key = e.key.toLowerCase();
+    var currentPathname = new URL(location.href).pathname;
+    
+    // Only process n/p keys on the main page
+    if (key === 'n' || key === 'p') {
+      if (!currentPathname.includes('duc.cgi') && currentPathname !== '/') {
+        return; // Silently ignore n/p keys on non-main pages
+      }
+    }
+
+    if (snapshots.length === 0) {
+      if (key === 'n' || key === 'p') {
+        firework.launch('No snapshots available', 'warning', 2000);
+      }
+      return;
+    }
+    
+    if (key === 'p' && selectedIndex > 0) {
+      window.location.href = urlFromIndex(selectedIndex - 1);
+    } else if (key === 'p') {
+      firework.launch('Already at oldest snapshot', 'success', 1500);
+    } else if (key === 'n' && selectedIndex < snapshots.length - 1) {
+      window.location.href = urlFromIndex(selectedIndex + 1);
+    } else if (key === 'n') {
+      firework.launch('Already at latest snapshot', 'success', 1500);
+    }
+  });
   
   // Manage snapshots page initialization
   if (pathname.includes('manage-snapshots.cgi')) {
