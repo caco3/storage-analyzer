@@ -39,7 +39,7 @@ RUN cd duc \
  && autoreconf -fiv \
  && ./configure \
  && make -j"$(nproc)" \
- && checkinstall --install=no --default --pkgversion="$DUC_VERSION" --pkgname="duc" \
+ && checkinstall --install=no --default --pkgversion="1.5.0-rc3" --pkgname="duc" \
  && cp duc_*.deb /duc.deb
 
  
