@@ -1,6 +1,6 @@
 ARG UBUNTU_VERSION=24.04
 ARG DUC_REPO_URL=https://github.com/caco3/duc.git
-ARG DUC_VERSION=c260e1a36c62291a68d37a3e2767dd84de302bc4
+ARG DUC_VERSION=80e6034
 
 ####################################
 # Temporary image for building Duc #
@@ -39,7 +39,7 @@ RUN cd duc \
  && autoreconf -fiv \
  && ./configure \
  && make -j"$(nproc)" \
- && checkinstall --install=no --default --pkgversion="1.5.0-rc3" --pkgname="duc" \
+ && checkinstall --install=no --default --pkgversion="1.5.0" --pkgname="duc" \
  && cp duc_*.deb /duc.deb
 
  
